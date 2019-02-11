@@ -29,7 +29,7 @@ function JopDiagonal(diagonal::AbstractArray{T}) where {T}
     spc = JetSpace(T, size(diagonal))
     JopLn(df! = JopDiagonal_df!, df′! = JopDiagonal_df′!, dom = spc, rng = spc, s = (diagonal=diagonal,))
 end
-JopDiagonal(spc::JetSpace, diagonal) = JopLn(df! = JopDiagonal_df!, df′! = JopDiagonal_df′!, dom = spc, rng = spc, s = (diagonal=diagonal,))
+JopDiagonal(spc::JetAbstractSpace, diagonal) = JopLn(df! = JopDiagonal_df!, df′! = JopDiagonal_df′!, dom = spc, rng = spc, s = (diagonal=diagonal,))
 export JopDiagonal
 
 JopDiagonal_df!(d, m; diagonal, kwargs...) = d .= diagonal .* m

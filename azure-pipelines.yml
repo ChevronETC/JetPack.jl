@@ -1,0 +1,30 @@
+pool:
+  vmImage: 'Ubuntu 16.04'
+
+variables:
+  - group: Incubator
+
+steps:
+- script: |
+    sudo wget https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.0-linux-x86_64.tar.gz
+    sudo mkdir -p /opt/julia
+    sudo tar --strip-components=1 -xzvf julia-1.1.0-linux-x86_64.tar.gz -C /opt/julia
+
+    mkdir -p $(HOME)/.julia/dev
+
+    cp -r ${BUILD_SOURCESDIRECTORY} $(HOME)/.julia/dev/JetPack
+
+    AUTH=$(echo -n ":$MYPAT" | openssl base64 | tr -d '\n')
+    git -c http.https://chevron.visualstudio.com/ETC-ESD-SR-Incubator/_git/Jets.jl.extraheader="AUTHORIZATION: basic $AUTH" clone https://chevron.visualstudio.com/ETC-ESD-SR-Incubator/_git/Jets.jl $(HOME)/.julia/dev/Jets
+
+    /opt/julia/bin/julia -e 'using Pkg; pkg"add Distributed DistributedArrays LinearAlgebra Random Serialization"'
+    /opt/julia/bin/julia -e 'using Pkg; pkg"develop --local $(HOME)/.julia/dev/Jets"'
+    /opt/julia/bin/julia -e 'using Pkg; pkg"develop --local $(HOME)/.julia/dev/JetPack"'
+    /opt/julia/bin/julia -e 'using Pkg; pkg"precompile"'
+  env:
+    MYPAT: $(PAT)
+  displayName: 'Install system'
+
+- script: |
+    /opt/julia/bin/julia -e 'using Pkg; pkg"test JetPack"'
+  displayName: 'Run unit-tests'
