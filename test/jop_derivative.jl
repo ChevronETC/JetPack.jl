@@ -1,8 +1,4 @@
-using Revise
-
 using JetPack, Jets, Test
-
-using LinearAlgebra
 
 @testset "JopDerivative, 2D, along first dimension" begin
     x = range(0, stop=4*pi, length=256)
