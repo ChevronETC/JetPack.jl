@@ -1,5 +1,9 @@
-include("jop_blend.jl")
-include("jop_circshift.jl")
-include("jop_derivative.jl")
-include("jop_diagonal.jl")
-include("jop_difference.jl")
+for filename in (
+        "jop_blend.jl",
+        "jop_circshift.jl",
+        "jop_derivative.jl",
+        "jop_diagonal.jl",
+        "jop_difference.jl",
+        "jop_taper.jl")
+    include(filename)
+end
