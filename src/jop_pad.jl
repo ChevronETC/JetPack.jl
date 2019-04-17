@@ -1,9 +1,11 @@
 """
-    A = JopPad(dom, pad..., [extend=false])
+    A = JopPad(dom, pad..., [extend=false, accumulate=false])
 
 where `dom::JetSpace` is the domain of `A`, and `pad::UnitRange...` determines the range of `A`.
 If `extend=false`, then the padded region is set to zero.  If `extend=true`, then the padded
-region is set from the boundary of the domain.
+region is set from the boundary of the domain.  The `accumulate=true` option is specific to
+the `Ginsu` operation in JetPackWave, and should not be used unless you really know what you
+are doing.
 
 # Examples:
 
@@ -28,9 +30,9 @@ d = A*m # d = [0. 0. 11. 12. 0. ; 0. 0. 21. 22. 0. ; 0. 0. 0. 0. 0.]
 * There may be overlap between the functionality of `JopPad` and `JopRestriction`, and it may be worth
 thinking of how to consolidate them.
 """
-function JopPad(dom::JetSpace{T}, pad::UnitRange...; extend=false) where {T}
+function JopPad(dom::JetSpace{T}, pad::UnitRange...; extend=false, accumulate=false) where {T}
     JopLn(dom = dom, rng = JetSpace(T, map(length, pad)), df! = JopPad_df!, df′! = JopPad_df′!,
-        s = (pad=pad, extend=extend))
+        s = (pad=pad, extend=extend, accumulate=accumulate))
 end
 export JopPad
 
@@ -52,7 +54,7 @@ function JopPad_df!(d::AbstractArray, m::AbstractArray; pad, extend, kwargs...)
     d
 end
 
-function JopPad_df′!(m::AbstractArray{T,N}, d::AbstractArray{T,N}; accumulate::Bool=false, pad, extend, kwargs...) where {T,N}
+function JopPad_df′!(m::AbstractArray{T,N}, d::AbstractArray{T,N}; accumulate, pad, extend, kwargs...) where {T,N}
     if accumulate
         JopPad_df′!(Val(extend), m, d, (x,y)->x+y, pad)
     else
