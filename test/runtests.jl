@@ -5,6 +5,7 @@ for filename in (
         "jop_diagonal.jl",
         "jop_difference.jl",
         "jop_pad.jl",
+        "jop_restriction.jl",
         "jop_taper.jl")
     include(filename)
 end
