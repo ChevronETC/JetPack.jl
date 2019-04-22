@@ -35,7 +35,7 @@ function JopRestriction(dom::JetAbstractSpace, rng::JetAbstractSpace, indices::V
     JopRestriction(dom, rng, _indices)
 end
 
-function JopRestriction(dom::JetAbstractSpace, indices::Vector{C}) where {C<:CartesianIndex}
+function JopRestriction(dom::JetAbstractSpace{T}, indices::Vector{C}) where {T,C<:CartesianIndex}
     rng = JetSpace(T, length(indices))
     JopRestriction(dom, rng, indices)
 end

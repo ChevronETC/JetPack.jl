@@ -1,7 +1,6 @@
 using JetPack, Jets, Test
 
 @testset "restriction, real to real, 1D" begin
-    A = JopRestriction(JetSpace(Float64,512), collect(1:4:512))
     lhs, rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
     @test lhs ≈ rhs
     m = rand(domain(A))
