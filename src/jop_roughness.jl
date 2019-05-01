@@ -18,7 +18,7 @@ A=
 ]
 ```
 """
-JopRoughness(sp::JetSpace, dim::Int; w::Int=1) = JopLn(Jet(dom = sp, rng = sp, df! = JopRoughness_df!, s = (dim=dim, w=w)))
+JopRoughness(sp::JetSpace, dim::Int; w::Int=1) = JopLn(dom = sp, rng = sp, df! = JopRoughness_df!, s = (dim=dim, w=w))
 
 export JopRoughness
 
