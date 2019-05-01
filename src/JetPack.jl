@@ -11,5 +11,6 @@ include("jop_pad.jl")
 include("jop_restriction.jl")
 include("jop_roughness.jl")
 include("jop_taper.jl")
+include("jop_translation.jl")
 
 end
