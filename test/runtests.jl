@@ -6,6 +6,7 @@ for filename in (
         "jop_difference.jl",
         "jop_pad.jl",
         "jop_permute.jl",
+        "jop_permutedims.jl",
         "jop_reshape.jl",
         "jop_restriction.jl",
         "jop_roughness.jl",
