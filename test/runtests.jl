@@ -8,6 +8,7 @@ for filename in (
         "jop_permute.jl",
         "jop_permutedims.jl",
         "jop_projection.jl",
+        "jop_reghost.jl",
         "jop_reshape.jl",
         "jop_restriction.jl",
         "jop_roughness.jl",
