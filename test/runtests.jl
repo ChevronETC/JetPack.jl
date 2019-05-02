@@ -4,6 +4,7 @@ for filename in (
         "jop_derivative.jl",
         "jop_diagonal.jl",
         "jop_difference.jl",
+        "jop_gradient.jl",
         "jop_laplacian.jl",
         "jop_leaky_integration.jl",
         "jop_lmo.jl",
