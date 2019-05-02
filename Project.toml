@@ -4,10 +4,10 @@ version = "0.0.0"
 
 [deps]
 Jets = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [extras]
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["LinearAlgebra", "Test"]
+test = ["Test"]
