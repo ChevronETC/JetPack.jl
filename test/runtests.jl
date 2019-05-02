@@ -4,6 +4,7 @@ for filename in (
         "jop_derivative.jl",
         "jop_diagonal.jl",
         "jop_difference.jl",
+        "jop_laplacian.jl",
         "jop_pad.jl",
         "jop_permute.jl",
         "jop_permutedims.jl",
