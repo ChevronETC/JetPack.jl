@@ -1,4 +1,3 @@
-using Revise
 using JetPack, Jets, Test
 
 @testset "reghost" begin
