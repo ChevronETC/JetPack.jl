@@ -5,7 +5,7 @@ Gradient for a 2D or 3D arrays. The range will have one more
 dimension than the domain and contain the components of the gradient
 in each dimension.
 
-* `dom::JotSpace{T,N}` is the domain of the operator.
+* `dom::JetSpace{T,N}` is the domain of the operator.
 * `δ::NTuple{T,N}` is the grid spacing in each dimension.
 
 # Examples:
