@@ -1,4 +1,4 @@
-using LinearAlgebra, Jot, Printf, Test
+using JetPack, Jets, Test
 
 n1,n2,n3 = 11,22,33
 
@@ -16,13 +16,14 @@ end
 
 @testset "Gradient2D, dot product test, T=$(T)" for T in (Float32,Float64)
     A = JopGradient(JetSpace(T,n1,n2), (rand(T),rand(T)))
-    lhs,rhs = dot_product_test(op, rand(domain(op)), rand(range(op)))
+    lhs,rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
     @test lhs ≈ rhs rtol=1e-6
 end
 
 @testset "Gradient3D dot product test, T=$(T)" for T in (Float64,Float32)
+    T=Float64
     A = JopGradient(JetSpace(T,n1,n2,n3), (rand(T),rand(T),rand(T)))
-    lhs,rhs = dot_product_test(A, rand(domain(op)), rand(range(op)))
+    lhs,rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
     @test lhs ≈ rhs rtol=1e-6
 end
 
