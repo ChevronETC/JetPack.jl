@@ -24,8 +24,8 @@ n1,n2 = 33,44
         m1 = -1 .+ 2 .* rand(domain(op))
         m2 = -1 .+ 2 .* rand(domain(op))
         m3 = -1 .+ 2 .* rand(domain(op))
-		dm = (J*m1 .+ J*m2 .- J*m3) .- (J*(m1 .+ m2 .- m3))
-		rms = sqrt(norm(dm)^2 / length(dm))
+        dm = (J*m1 .+ J*m2 .- J*m3) .- (J*(m1 .+ m2 .- m3))
+        rms = sqrt(norm(dm)^2 / length(dm))
         write(stdout, @sprintf("JotOpLnLog forward is linear -- type(%s) -- rms; %+14.8e\n", T, rms))
         @test rms < 1000 * eps(real(T))
 
@@ -34,7 +34,7 @@ n1,n2 = 33,44
         d2 = -1 .+ 2 .* rand(range(op))
         d3 = -1 .+ 2 .* rand(range(op))
         dm = (J'*d1 .+ J'*d2 .- J'*d3) .- (J'*(d1 .+ d2 .- d3))
-		rms = sqrt(norm(dm)^2 / length(dm))
+        rms = sqrt(norm(dm)^2 / length(dm))
         write(stdout, @sprintf("JotOpLnLog adjoint is linear -- type(%s) -- rms; %+14.8e\n", T, rms))
         @test rms < 1000 * eps(real(T))
     end
@@ -49,12 +49,12 @@ n1,n2 = 33,44
         @test diff < 1000 * eps(real(T))
     end
 
-	# note the key here is to increase the size of the nonlinear vector
+    # note the key here is to increase the size of the nonlinear vector
     @testset "Log linearization test, T=$(T)" for T in (Float64,Float32,Complex{Float64},Complex{Float32})
         op = JopLog(JetSpace(T,n1,n2))
         m0 = 1000 .* rand(domain(op)) .+ T(0.0001)
         μ  = sqrt.([1/1,1/2,1/4,1/8,1/16,1/32,1/64,1/128,1/256,1/512,1/1024,1/2048,1/4096,1/8192])
-		dm = rand(domain(op)) .+ T(0.0001)
+        dm = rand(domain(op)) .+ T(0.0001)
         observed, expected = linearization_test(op, m0, μ = μ, δm = dm)
         δ = minimum(abs, observed - expected)
         write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
@@ -64,6 +64,6 @@ n1,n2 = 33,44
         write(stdout, @sprintf("minimum difference %12.6e\n", minimum(abs,observed .- expected)))
         @test δ < 0.1
     end
-	nothing
+    nothing
 end
 nothing

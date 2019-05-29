@@ -13,7 +13,7 @@ end
 
 # TODO: assert denominator > 0 
 function JopLog_upstate!(u::AbstractArray, s::NamedTuple) 
-	s.invu .= 1 ./ u
+    s.invu .= 1 ./ u
 end
 
 function JopLog_df!(δd::AbstractArray, δm::AbstractArray; invu, kwargs...) 
