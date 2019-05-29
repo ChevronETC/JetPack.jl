@@ -11,7 +11,7 @@ n1,n2 = 33,44
         y2 = log.(x1)
         dy = y1 .- y2
         diff = sqrt(norm(dy)^2 / length(dy))
-        write(stdout, @sprintf("Log calculation -- type(%s) -- rms; %+14.8e\n", T, diff))
+        #write(stdout, @sprintf("Log calculation -- type(%s) -- rms; %+14.8e\n", T, diff))
         @test diff < 1000 * eps(real(T))
     end
 
@@ -26,7 +26,7 @@ n1,n2 = 33,44
         m3 = -1 .+ 2 .* rand(domain(op))
         dm = (J*m1 .+ J*m2 .- J*m3) .- (J*(m1 .+ m2 .- m3))
         rms = sqrt(norm(dm)^2 / length(dm))
-        write(stdout, @sprintf("JotOpLnLog forward is linear -- type(%s) -- rms; %+14.8e\n", T, rms))
+        #write(stdout, @sprintf("JotOpLnLog forward is linear -- type(%s) -- rms; %+14.8e\n", T, rms))
         @test rms < 1000 * eps(real(T))
 
         #  check: J' d1 + J' d2 -J' d3 = J' (d1 + d2 - d3)
@@ -35,7 +35,7 @@ n1,n2 = 33,44
         d3 = -1 .+ 2 .* rand(range(op))
         dm = (J'*d1 .+ J'*d2 .- J'*d3) .- (J'*(d1 .+ d2 .- d3))
         rms = sqrt(norm(dm)^2 / length(dm))
-        write(stdout, @sprintf("JotOpLnLog adjoint is linear -- type(%s) -- rms; %+14.8e\n", T, rms))
+        #write(stdout, @sprintf("JotOpLnLog adjoint is linear -- type(%s) -- rms; %+14.8e\n", T, rms))
         @test rms < 1000 * eps(real(T))
     end
 
@@ -45,7 +45,7 @@ n1,n2 = 33,44
         J  = jacobian(op, x)
         lhs, rhs = dot_product_test(J, -1 .+ 2 .* rand(domain(op)), -1 .+ 2 .* rand(range(op)))
         diff = abs((lhs - rhs) / (lhs + rhs))
-        write(stdout, @sprintf("Jacobian dot product test -- type(%s) -- rms; %+12.6e\n", T, diff))
+        #write(stdout, @sprintf("Jacobian dot product test -- type(%s) -- rms; %+12.6e\n", T, diff))
         @test diff < 1000 * eps(real(T))
     end
 
@@ -57,11 +57,11 @@ n1,n2 = 33,44
         dm = rand(domain(op)) .+ T(0.0001)
         observed, expected = linearization_test(op, m0, μ = μ, δm = dm)
         δ = minimum(abs, observed - expected)
-        write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
-        for i = 1:length(observed)
+        #write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
+        #for i = 1:length(observed)
             #write(stdout, @sprintf("mu,observed,expected,diff; %12.6f %12.6f %12.6f %12.6f\n", mu[i], observed[i], expected[i], abs(observed[i] - expected[i])))
-        end
-        write(stdout, @sprintf("minimum difference %12.6e\n", minimum(abs,observed .- expected)))
+        #end
+        #write(stdout, @sprintf("minimum difference %12.6e\n", minimum(abs,observed .- expected)))
         @test δ < 0.1
     end
     nothing
