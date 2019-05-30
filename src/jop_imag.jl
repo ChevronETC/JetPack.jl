@@ -1,5 +1,5 @@
 """
-	op = JopImag(dom)
+    op = JopImag(dom)
 
 Extract the imaginary part of a complex input array where `dom::JetSpace{<:Complex}`.
 """
