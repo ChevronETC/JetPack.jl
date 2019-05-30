@@ -3,7 +3,6 @@
 
 Extract the imaginary part of a complex input array where `dom::JetSpace{<:Complex}`.
 """
-
 JopImag(dom::JetSpace{Complex{T}}) where {T} = JopLn(dom = dom, rng = JetSpace(T,size(dom)), df! = JopImag_df!, df′! = JopImag_df′!)
 export JopImag
 
