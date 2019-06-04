@@ -3,7 +3,7 @@ uuid = "24ef3835-3876-54c3-8a7a-956cf69ca0b2"
 version = "0.0.0"
 
 [deps]
-Jets = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
+Jets = "2a57b368-ab28-5ba9-84aa-637fe7991822"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [extras]
