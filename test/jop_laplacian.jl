@@ -1,4 +1,3 @@
-using Revise
 using JetPack, Jets, Test
 
 @testset "JopLaplacian, T=$(T)" for T in (Float32, Float64)
