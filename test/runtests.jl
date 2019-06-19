@@ -14,6 +14,7 @@ for filename in (
         "jop_log.jl",
         "jop_lmo.jl",
         "jop_mix.jl",
+        "jop_nim.jl",
         "jop_pad.jl",
         "jop_permute.jl",
         "jop_permutedims.jl",
