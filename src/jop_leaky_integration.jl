@@ -19,7 +19,6 @@ function leaky_helper!(d, m, dim, α, isadj)
     Rpost = CartesianIndices(size(m)[dim+1:end])
     n = size(m, dim)
     N = isadj ? (n:-1:1) : (1:n)
-    @show N
     leaky_helper_dim!(d, m, α, N, Rpre, Rpost)
 end
 
