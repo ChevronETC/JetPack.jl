@@ -1,7 +1,7 @@
 """
     F = JopPow(spc, c)
 
-where `F` is the power operator (c/x)^a with domain and range given by `spc::JetSpace`, and scalar values c, a.
+where `F` is the power operator (x/c)^a with domain and range given by `spc::JetSpace`, and scalar values c, a.
 """
 JopPow(spc::JetSpace{T}, c = 1, a = 2) where {T} = JopNl(dom = spc, rng = spc, f! = JopPow_f!, df! = JopPow_df!, df′! = JopPow_df′!, s = (c=T(c), a=T(a)))
 export JopPow
