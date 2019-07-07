@@ -1,5 +1,5 @@
 """
-    F = JopPow(spc, c)
+    F = JopPow(spc, c, a)
 
 where `F` is the power operator (x/c)^a with domain and range given by `spc::JetSpace`, and scalar values c, a.
 """
