@@ -30,10 +30,10 @@ end
     δm = rand(domain(F)) .+ T(0.0001)
     observed, expected = linearization_test(F, m0, μ = μ, δm = δm)
     δ = minimum(abs, observed - expected)
-    write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
-    for i = 1:length(observed)
-        write(stdout, @sprintf("mu,observed,expected,diff; %12.6f %12.6f %12.6f %12.6f\n", μ[i], observed[i], expected[i], abs(observed[i] - expected[i])))
-    end
-    write(stdout, @sprintf("minimum difference %12.6f\n", minimum(abs,observed .- expected)))
+    #write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
+    #for i = 1:length(observed)
+        #write(stdout, @sprintf("mu,observed,expected,diff; %12.6f %12.6f %12.6f %12.6f\n", μ[i], observed[i], expected[i], abs(observed[i] - expected[i])))
+    #end
+    #write(stdout, @sprintf("minimum difference %12.6f\n", minimum(abs,observed .- expected)))
     @test δ < 0.1
 end
