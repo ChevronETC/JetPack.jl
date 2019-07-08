@@ -25,15 +25,15 @@ end
 # note the key here is to increase the size of the nonlinear vector
 @testset "JopLog, linearization test, T=$(T)" for T in (Float64,Float32,Complex{Float64},Complex{Float32})
     F = JopLog(JetSpace(T,n1,n2))
-    m0 = 1000 .* rand(domain(F)) .+ T(0.0001)
-    μ  = sqrt.([1/1,1/2,1/4,1/8,1/16,1/32,1/64,1/128,1/256,1/512,1/1024,1/2048,1/4096,1/8192])
+    m0 = 1000 .* rand(domain(F)) .+ T(1)
+    μ  = sqrt.([1/1,1/2,1/4,1/8,1/16,1/32,1/64,1/128,1/256,1/512,1/1024,1/2048])
     δm = rand(domain(F)) .+ T(0.0001)
     observed, expected = linearization_test(F, m0, μ = μ, δm = δm)
     δ = minimum(abs, observed - expected)
-    #write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
-    #for i = 1:length(observed)
-        #write(stdout, @sprintf("mu,observed,expected,diff; %12.6f %12.6f %12.6f %12.6f\n", mu[i], observed[i], expected[i], abs(observed[i] - expected[i])))
-    #end
-    #write(stdout, @sprintf("minimum difference %12.6e\n", minimum(abs,observed .- expected)))
+    write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
+    for i = 1:length(observed)
+        write(stdout, @sprintf("mu,observed,expected,diff; %12.6f %12.6f %12.6f %12.6f\n", μ[i], observed[i], expected[i], abs(observed[i] - expected[i])))
+    end
+    write(stdout, @sprintf("minimum difference %12.6f\n", minimum(abs,observed .- expected)))
     @test δ < 0.1
 end
