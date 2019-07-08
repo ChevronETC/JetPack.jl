@@ -1,4 +1,4 @@
-using LinearAlgebra, Jets, JetPack, Test, Printf
+using LinearAlgebra, Jets, JetPack, Test
 
 n1,n2 = 33,44
 
