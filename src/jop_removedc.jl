@@ -11,9 +11,9 @@ end
 export JopRemoveDC
 
 function JopRemoveDC_df!(rngvec::AbstractArray{T,2}, domvec::AbstractArray{T,2}; kwargs...) where {T}
-    rngvec .= domvec .- Statistics.mean(domvec)
+    rngvec .= domvec .- mean(domvec)
 end
 
 function JopRemoveDC_df′!(domvec::AbstractArray{T,2}, rngvec::AbstractArray{T,2}; kwargs...) where {T}
-    domvec .= rngvec .- Statistics.mean(rngvec)
+    domvec .= rngvec .- mean(rngvec)
 end
