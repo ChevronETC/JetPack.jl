@@ -3,6 +3,7 @@ module JetPack
 using Jets
 using LinearAlgebra
 
+include("jop_affine.jl")
 include("jop_atan.jl")
 include("jop_blend.jl")
 include("jop_circshift.jl")
