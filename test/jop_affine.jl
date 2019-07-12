@@ -48,8 +48,9 @@ end
     @test lhs ≈ rhs
 end
 
+#Linearization test modified since the linearization of an affine operator is exactly linear. 
+#Usual linearization test will fail since ||F(m + dm) - F(m) - Jdm|| will be close to zero and observed quantity will have 0/0
 @testset "JopAffine, linearization test, T=$(T)" for T in (Float64,Float32,Complex{Float64},Complex{Float32})
-#@testset "JopAffine, linearization test, T=$(T)" for T in (Float64,Float32)
     @info "Testing scalar b"
     b = rand(T,1)
     F = JopAffine(JetSpace(T,n1,n2),b)
