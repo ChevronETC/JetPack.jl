@@ -2,6 +2,7 @@ module JetPack
 
 using Jets
 using LinearAlgebra
+using Statistics
 
 include("jop_atan.jl")
 include("jop_blend.jl")
