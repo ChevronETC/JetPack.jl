@@ -22,6 +22,7 @@ for filename in (
         "jop_pow.jl",
         "jop_projection.jl",
         "jop_reghost.jl",
+        "jop_removedc.jl",
         "jop_reshape.jl",
         "jop_restriction.jl",
         "jop_roughness.jl",
