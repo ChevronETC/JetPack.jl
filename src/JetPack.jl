@@ -2,6 +2,7 @@ module JetPack
 
 using Jets
 using LinearAlgebra
+using Statistics
 
 include("jop_atan.jl")
 include("jop_blend.jl")
@@ -25,6 +26,7 @@ include("jop_permute.jl")
 include("jop_permutedims.jl")
 include("jop_pow.jl")
 include("jop_projection.jl")
+include("jop_removedc.jl")
 include("jop_reghost.jl")
 include("jop_reshape.jl")
 include("jop_restriction.jl")
