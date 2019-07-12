@@ -1,4 +1,5 @@
 for filename in (
+        "jop_affine.jl",
         "jop_atan.jl",
         "jop_blend.jl",
         "jop_circshift.jl",
