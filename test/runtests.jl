@@ -1,5 +1,4 @@
 for filename in (
-        "jop_affine.jl",
         "jop_atan.jl",
         "jop_blend.jl",
         "jop_circshift.jl",
@@ -26,6 +25,7 @@ for filename in (
         "jop_reshape.jl",
         "jop_restriction.jl",
         "jop_roughness.jl",
+        "jop_shift.jl",
         "jop_taper.jl",
         "jop_translation.jl")
     include(filename)

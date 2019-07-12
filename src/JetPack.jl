@@ -3,7 +3,6 @@ module JetPack
 using Jets
 using LinearAlgebra
 
-include("jop_affine.jl")
 include("jop_atan.jl")
 include("jop_blend.jl")
 include("jop_circshift.jl")
@@ -30,6 +29,7 @@ include("jop_reghost.jl")
 include("jop_reshape.jl")
 include("jop_restriction.jl")
 include("jop_roughness.jl")
+include("jop_shift.jl")
 include("jop_taper.jl")
 include("jop_translation.jl")
 
