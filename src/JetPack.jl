@@ -32,6 +32,7 @@ include("jop_reshape.jl")
 include("jop_restriction.jl")
 include("jop_roughness.jl")
 include("jop_shift.jl")
+include("jop_sigmoid.jl")
 include("jop_taper.jl")
 include("jop_translation.jl")
 
