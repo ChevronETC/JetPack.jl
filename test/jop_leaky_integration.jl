@@ -17,6 +17,12 @@ n1,n2,n3 = 10,11,12
     @test norm(y1 .- y2) < 10 * eps(real(T))
 end
 
+@testset "JopLeakyIntegration, 1D, adjoint, T=$T" for T in (Float32, Float64, Complex{Float32}, Complex{Float64}), α in (1.0, real(rand(T)))
+    A = JopLeakyIntegration(JetSpace(T,n1), α=α)
+    lhs, rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
+    @test lhs ≈ rhs
+end
+
 @testset "JopLeakyIntegration, 2D, adjoint, T=$T" for T in (Float32, Float64, Complex{Float32}, Complex{Float64}), α in (1.0, real(rand(T)))
     A = JopLeakyIntegration(JetSpace(T,n1,n2), α=α)
     lhs, rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
@@ -26,6 +32,22 @@ end
 @testset "JopLeakyIntegration, 3D, adjoint, T=$T" for T in (Float32, Float64, Complex{Float32}, Complex{Float64}), α in (1.0, real(rand(T)))
     A = JopLeakyIntegration(JetSpace(T,n1,n2,n3), α=α)
     lhs, rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
+    @test lhs ≈ rhs
+end
+
+@testset "JopLeakyIntegration, 1D, linearity, T=$T" for T in (Float32, Float64, Complex{Float32}, Complex{Float64}), α in (1.0, real(rand(T)))
+    A = JopLeakyIntegration(JetSpace(T,n1), α=α)
+    lhs,rhs = linearity_test(A)
+    @test lhs ≈ rhs
+    lhs,rhs = linearity_test(A')
+    @test lhs ≈ rhs
+end
+
+@testset "JopLeakyIntegration, 2D, linearity, T=$T" for T in (Float32, Float64, Complex{Float32}, Complex{Float64}), α in (1.0, real(rand(T)))
+    A = JopLeakyIntegration(JetSpace(T,n1,n2), α=α)
+    lhs,rhs = linearity_test(A)
+    @test lhs ≈ rhs
+    lhs,rhs = linearity_test(A')
     @test lhs ≈ rhs
 end
 
