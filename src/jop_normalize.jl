@@ -28,12 +28,10 @@ end
 #   df  = ( I_t[m] dm - I_t[dm] m) / (I_t[m])^2
 #   dfᵀ = (I_t[m] δd - I_tᵀ[mᵀ δd]) / (I_t[m])^2
 
-# (I_t[m] I[dm] - I_t[dm] I[m]) / (I_t[m])^2
 function JopNormalize_df!(δd::AbstractArray{T}, δm::AbstractArray{T}; mₒ, tmp1, tmp2, A) where {T}
     δd .= (sum(mₒ,dims=1) .* δm .- sum(δm,dims=1) .* mₒ) ./ sum(mₒ,dims=1).^2
 end
 
-# (I_t[m] Iᵀ[δd] - I_tᵀ[mᵀ Iᵀ δd]) / (I_t[m])^2
 function JopNormalize_df′!(δm::AbstractArray{T}, δd::AbstractArray{T}; mₒ, tmp1, tmp2, A) where {T}
     δm .= conj.((sum(mₒ,dims=1) .* conj.(δd) .- sum(mₒ .* conj.(δd),dims=1)) ./ sum(mₒ,dims=1).^2)
 end
