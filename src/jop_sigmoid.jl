@@ -14,11 +14,9 @@ JopSigmoid_f!(d::AbstractArray{T}, m::AbstractArray{T}; c, tmp) where {T} = d .=
 function JopSigmoid_df!(δd::AbstractArray{T}, δm::AbstractArray{T}; mₒ, c, tmp) where {T}
     tmp .= ( T(1) .+ exp.(-mₒ ./ c) ).^T(-1)
     δd .= δm .* (T(1) ./ c) .* (tmp .* (T(1) .- tmp))
-    δd
 end
 
 function JopSigmoid_df′!(δm::AbstractArray{T}, δd::AbstractArray{T}; mₒ, c, tmp) where {T}
     tmp .= ( T(1) .+ exp.(-mₒ ./ c) ).^T(-1)
     δm .= δd .* conj((T(1) ./ c) .* (tmp .* (T(1) .- tmp)))
-    δm
 end
