@@ -27,6 +27,7 @@ for filename in (
         "jop_restriction.jl",
         "jop_roughness.jl",
         "jop_shift.jl",
+        "jop_sigmoid.jl",
         "jop_taper.jl",
         "jop_translation.jl")
     include(filename)
