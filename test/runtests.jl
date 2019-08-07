@@ -22,6 +22,7 @@ for filename in (
         "jop_permutedims.jl",
         "jop_pow.jl",
         "jop_projection.jl",
+        "jop_real.jl",
         "jop_reghost.jl",
         "jop_removedc.jl",
         "jop_reshape.jl",
