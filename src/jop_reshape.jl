@@ -2,4 +2,7 @@ JopReshape(dom::JetAbstractSpace, rng::JetAbstractSpace) = JopLn(dom = dom, rng 
 
 export JopReshape
 
-JopReshape_df!(d, m; kwargs...) = d[:] .= m[:]
+function JopReshape_df!(d, m; kwargs...)
+    d[:] .= m[:]
+    d
+end
