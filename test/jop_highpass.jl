@@ -4,5 +4,5 @@ using JetPack, Jets, Test
     A = JopHighpass(JetSpace(T,64,128))
 
     lhs, rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
-    @test lhs ≈ rhs rtol=1e-5
+    @test lhs ≈ rhs rtol=1e-4
 end
