@@ -2,7 +2,7 @@ pool:
   vmImage: 'Ubuntu 16.04'
 
 variables:
-  - group: Incubator
+  - group: JetPack
 
 steps:
 - task: DownloadSecureFile@1
