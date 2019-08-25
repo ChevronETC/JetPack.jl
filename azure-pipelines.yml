@@ -43,7 +43,6 @@ steps:
     /opt/julia/bin/julia -e 'using Pkg; pkg"precompile"'
   env:
     MYJULIA_VERSION: $(JULIA_VERSION)
-
   displayName: 'Install system'
 
 - script: |
