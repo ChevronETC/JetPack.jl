@@ -109,5 +109,5 @@ function buildtaper(dim, prc, mode, n, taper)
         end
     end
 
-    tpr = mod == :fft ? fftshift(tpr) : tpr
+    tpr = mode == :fft ? fftshift(tpr) : tpr
 end
