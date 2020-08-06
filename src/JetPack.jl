@@ -1,5 +1,6 @@
 module JetPack
 
+using FFTW
 using Jets
 using LinearAlgebra
 using Statistics
