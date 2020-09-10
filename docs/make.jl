@@ -1,7 +1,7 @@
-using Documenter, DocumenterMarkdown, JetPack
+using Documenter, JetPack
 
-makedocs(
-    format = Markdown(),
-    sitename = "Foo"
+makedocs(sitename = "JetPack", modules=[JetPack])
+
+deploydocs(
+    repo = "github.com/ChevronETC/JetPack.jl.git",
 )
-cp("build/README.md", "../README.md", force=true)
