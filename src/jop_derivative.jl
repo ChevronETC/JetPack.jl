@@ -1,3 +1,11 @@
+"""
+    A = JopDerivative(R::JetSpace[; dim=1, accuracy=4, delta=1.0)
+
+`A*m` is the centered finite different approximation to the derivative of `m`
+along dimension `dim`.  The `accuracy` of the approximation is either `4` for
+a 4th order accurate estimate of the derivative, or `8` for an 8th order accurate
+derivative.
+"""
 function JopDerivative(sp::JetSpace{T}; dim=1, accuracy=4, delta=1.0) where {T}
     local a
     if accuracy == 4
