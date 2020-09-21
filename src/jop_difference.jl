@@ -1,3 +1,9 @@
+"""
+    A = JopDifference(R::JetSpace[, dim=1])
+
+`A*m` is similar to `diff(a,dims=dim)` where `a` is a vector in the space `R`.
+In other words, it is the one-sided difference of `a` along the dimension `dim`.
+"""
 function JopDifference(spc::JetAbstractSpace, dim::Integer=1)
     JopLn(df! = JopDifference_df!, df′! = JopDifference_df′!, dom = spc, rng = spc, s = (dim=dim,))
 end

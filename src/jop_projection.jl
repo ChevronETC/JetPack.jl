@@ -1,3 +1,8 @@
+"""
+    A = JopProjection(u::AbstractArray)
+
+`A*m` is the projection of vector `m` onto the vector `u`.
+"""
 function JopProjection(u::AbstractArray{T,N}) where {T,N}
     u_normed = zeros(eltype(u), size(u))
     for idx in CartesianIndices(size(u)[1:end-1])

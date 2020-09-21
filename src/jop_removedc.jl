@@ -1,5 +1,5 @@
 """
-    JopReoveDC(s::JetAbstractSpace{T,N})
+    JopRemoveDC(s::JetAbstractSpace{T,N})
 
 F(x) = x - zero frequency component of x along the fastest dimension
 Uses Fourier transform, as the DC component differs from the mean as a function of interval length and zero padding.

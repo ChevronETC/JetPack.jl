@@ -1,8 +1,22 @@
-# JetPack
+# JetPack.jl
 
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://ChevronETC.github.io/JetPack.jl/stable)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://ChevronETC.github.io/JetPack.jl/dev)
-[![](https://travis-ci.org/ChevronETC/JetPack.jl.svg?branch=master)](https://travis-ci.org/ChevronETC/JetPack.jl)
-[![](https://coveralls.io/repos/github/ChevronETC/JetPack.jl/badge.svg?branch=master)](https://coveralls.io/github/ChevronETC/JetPack.jl?branch=master)
+| **Documentation** | **Action Statuses** |
+|:---:|:---:|
+| [![][docs-dev-img]][docs-dev-url] [![][docs-stable-img]][docs-stable-url] | [![][doc-build-status-img]][doc-build-status-url] [![][build-status-img]][build-status-url] [![][code-coverage-img]][code-coverage-results] |
 
-Jets.jl operator pack
+A somewhat hap-hazard set of operators for [Jets.jl](https://github.com/ChevronETC/Jets.jl).
+
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://chevronetc.github.io/JetPack.jl/dev/
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://ChevronETC.github.io/JetPack.jl/stable
+
+[doc-build-status-img]: https://github.com/ChevronETC/JetPack.jl/workflows/Documentation/badge.svg
+[doc-build-status-url]: https://github.com/ChevronETC/JetPack.jl/actions?query=workflow%3ADocumentation
+
+[build-status-img]: https://github.com/ChevronETC/JetPack.jl/workflows/Tests/badge.svg
+[build-status-url]: https://github.com/ChevronETC/JetPack.jl/actions?query=workflow%3A"Tests"
+
+[code-coverage-img]: https://codecov.io/gh/ChevronETC/JetPack.jl/branch/master/graph/badge.svg
+[code-coverage-results]: https://codecov.io/gh/ChevronETC/JetPack.jl

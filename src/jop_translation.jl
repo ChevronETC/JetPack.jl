@@ -1,3 +1,8 @@
+"""
+    A = JopTranslation(p1::Matrix, p2::Matrix)
+
+`A*m` translates `m::Matrix` using the vector field `(p1,p2)`.
+"""
 function JopTranslation(p1::Array{T,2}, p2::Array{T,2}) where {T}
     n = size(p1)
     @assert size(p1) == size(p2)
