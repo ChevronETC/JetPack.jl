@@ -20,7 +20,7 @@ function JopRemoveDC_df!(d::AbstractArray{T,2}, m::AbstractArray{T,2}; kwargs...
         mean = sum(_m[:,k2]) / length(_m[:,k2])
         _d[:,k2] .= _m[:,k2] .- mean
     end
-    _d
+    d
 end
 
 function JopRemoveDC_df′!(m::AbstractArray{T,2}, d::AbstractArray{T,2}; kwargs...) where {T}
@@ -32,5 +32,5 @@ function JopRemoveDC_df′!(m::AbstractArray{T,2}, d::AbstractArray{T,2}; kwargs
         mean = sum(_d[:,k2]) / length(_d[:,k2])
         _m[:,k2] .= _d[:,k2] .- mean
     end
-    _m
+    m
 end
