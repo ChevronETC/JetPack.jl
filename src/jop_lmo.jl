@@ -32,7 +32,7 @@ end
 
 function JopLMO_df′!(m::AbstractArray{T,2}, d::AbstractArray{T,2}; v, kwargs...) where {T}
     nz, nx = size(d)
-    fill!(m, 0.0)
+    m .= 0
     for ix = 1:nx, iz = 1:nz
         iz_mo = iz + v*ix
         iz_mo_lb = floor(Int, iz_mo)
