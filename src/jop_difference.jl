@@ -10,11 +10,13 @@ end
 export JopDifference
 
 function JopDifference_df!(d, m; dim, kwargs...)
+    d .= 0
     n,Rpre,Rpost = JopDifference_indices(m, dim)
     JopDifference_df_dim!(d, m, n, Rpre, Rpost)
 end
 
 function JopDifference_df′!(m, d; dim, kwargs...)
+    m .= 0
     n,Rpre,Rpost = JopDifference_indices(m, dim)
     JopDifference_df′_dim!(m, d, n, Rpre, Rpost)
 end
