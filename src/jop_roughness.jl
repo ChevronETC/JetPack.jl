@@ -1,11 +1,11 @@
 """
     A = JopRoughness(sp, dim, w)
 
-`A`  can be used to regularize an optimization problem, applying a penelty to
+`A`  can be used to regularize an optimization problem, applying a penalty to
 models that are non-smooth.  This is similar to a finite difference operator,
 but here no care is taken to ensure that `A` computes a derivative.  `dim` is
 the dimension that one wishes to smooth and `w` is the half-width of the smoother.
-The width of the window determines how strong the penelty is for being non-smooth.
+The width of the window determines how strong the penalty is for being non-smooth.
 
 For example, the form of `A` for `w=1` is,
 ```julia
