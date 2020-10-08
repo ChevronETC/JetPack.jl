@@ -51,6 +51,12 @@ function JopInterp_apply_2d(domvec::AbstractArray, rngvec::AbstractArray, dom, r
     ϵ = 1000 * eps(eltype(domvec))
     wmin,wmax = 0-ϵ,1+ϵ
 
+    if isadj
+        domvec .= 0
+    else
+        rngvec .= 0
+    end
+    
     for kxrng = 1:nxrng
         for kzrng = 1:nzrng
             xx = xmin + dxrng * (kxrng-1)
