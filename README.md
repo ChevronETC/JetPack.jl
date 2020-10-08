@@ -4,7 +4,15 @@
 |:---:|:---:|
 | [![][docs-dev-img]][docs-dev-url] [![][docs-stable-img]][docs-stable-url] | [![][doc-build-status-img]][doc-build-status-url] [![][build-status-img]][build-status-url] [![][code-coverage-img]][code-coverage-results] |
 
-A somewhat hap-hazard set of operators for [Jets.jl](https://github.com/ChevronETC/Jets.jl).
+A set of nonlinear and linear operators for [Jets.jl](https://github.com/ChevronETC/Jets.jl).
+
+These operators include the following functionality:
+* Padding and truncation operators 
+* Derivative, integration, and roughness operators
+* Multi-dimensional transpose, permutation, reshape, and restriction operators
+* Blending and projection operators
+* Operators implementing transcendental functions like logarithm and exponentiation, with linearization
+* Special functions as used in some full waveform inversion approaches, including *Normalized Integral Method* and linear non-analytic operators including taking real and imaginary parts
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [docs-dev-url]: https://chevronetc.github.io/JetPack.jl/dev/
