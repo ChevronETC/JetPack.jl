@@ -16,7 +16,7 @@ The optional named argument `mode` can be used if the taper is applied to a dime
 corresponds to FFT ordering where the edges are assumed to be at the center and left ends of the dimension.
 
 The optional named argument `taper` is a tuple specifying what type of taper to use at each end.  Available
-tapers are :cosine and :heviside.
+tapers are :cosine and :heaviside.
 
 # Examples:
 
@@ -95,7 +95,7 @@ function buildtaper(dim, prc, mode, n, taper)
         if taper[1] == :cosine
             x = (i - 1.0) / (nlft - 1.0)
             tpr[i] = 0.5 * (1.0 + cos(pi * (1.0 + x)))
-        else # :heviside
+        else # :heaviside
             tpr[i] = 0.0
         end
     end
@@ -104,7 +104,7 @@ function buildtaper(dim, prc, mode, n, taper)
         if taper[2] == :cosine
             x = (i - 1.0) / (nrht - 1.0)
             tpr[n+1-i] = 0.5 * (1.0 + cos(pi * (1.0 + x)))
-        else # :heviside
+        else # :heaviside
             tpr[n+1-i] = 0.0
         end
     end
