@@ -13,8 +13,10 @@ using JetPack, Jets, Test
 end
 
 # note this is a second order derivative, so we loosen up tolerance from 
-# 2nd to 3rd root epsilon(type)
+# 2nd to 4th root epsilon(type)
 @testset "JopLaplacian, action T=$(T)" for T in (Float32, Float64)
+    tol = eps(T)^0.25
+
     sp = JetSpace(T,64,128)
     A = JopLaplacian(sp)
     a,b = rand(T),rand(T)
@@ -26,7 +28,6 @@ end
     y = A * x
     expected = 2 * (a + b)
     z = y[2:nz-1,2:nx-1] .- expected .* ones(T,nz-2,nx-2)
-    tol = eps(T)^(1.0/3.0)
     @test maximum(abs,z) < tol
 
     sp = JetSpace(T,16,32,64)
