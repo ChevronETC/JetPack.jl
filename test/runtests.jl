@@ -1,3 +1,7 @@
+# set random seed to promote repeatability in CI unit tests
+using Random
+Random.seed!(101)
+
 for filename in (
         "jop_atan.jl",
         "jop_blend.jl",
