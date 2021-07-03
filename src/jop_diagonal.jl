@@ -26,7 +26,7 @@ d = A*m # d = [1.0 ; 2.0 ; 3.0]
 ```
 """
 function JopDiagonal(diagonal::AbstractArray{T}) where {T}
-    spc = JetSpace(T, size(diagonal))
+    spc = space(diagonal)
     JopLn(df! = JopDiagonal_df!, df′! = JopDiagonal_df′!, dom = spc, rng = spc, s = (diagonal=diagonal,))
 end
 JopDiagonal(spc::JetAbstractSpace, diagonal) = JopLn(df! = JopDiagonal_df!, df′! = JopDiagonal_df′!, dom = spc, rng = spc, s = (diagonal=diagonal,))
