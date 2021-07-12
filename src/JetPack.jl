@@ -3,6 +3,7 @@ module JetPack
 using FFTW
 using Jets
 using LinearAlgebra
+using SpecialFunctions
 using Statistics
 
 include("jop_atan.jl")
@@ -11,6 +12,7 @@ include("jop_circshift.jl")
 include("jop_derivative.jl")
 include("jop_diagonal.jl")
 include("jop_difference.jl")
+include("jop_erf.jl")
 include("jop_exp.jl")
 include("jop_gradient.jl")
 include("jop_highpass.jl")
