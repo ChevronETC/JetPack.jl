@@ -26,21 +26,10 @@ end
 @testset "JopErf, linearization test, T=$(T)" for T in (Float64,Float32,Complex{Float64},Complex{Float32})
     T = Complex{Float64}
     F = JopErf(JetSpace(T,n1,n2))
-    #m0 = 1 .* rand(domain(F))
-    m0 = -0.5 .+ rand(domain(F))
+    m0 = -1 .+ 2 .* rand(domain(F))
     μ  = sqrt.([1/1,1/2,1/4,1/8,1/16,1/32,1/64,1/128,1/256,1/512,1/1024,1/2048])
-    # new stuff 
     δm = rand(domain(F))
-    Fₒ = F*m0
-    Jₒ = jacobian!(F, m0)
-    Jₒδm = Jₒ*δm
-
     observed, expected = linearization_test(F, m0, μ = μ, δm = δm)
     δ = minimum(abs, observed - expected)
-    # write(stdout, @sprintf("\nLinearization test -- type(%s)\n", T))
-    # for i = 1:length(observed)
-    #     write(stdout, @sprintf("mu,observed,expected,diff; %12.6f %12.6f %12.6f %12.6f\n", μ[i], observed[i], expected[i], abs(observed[i] - expected[i])))
-    # end
-    # #write(stdout, @sprintf("minimum difference %12.6f\n", minimum(abs,observed .- expected)))
     @test δ < 0.1
 end
