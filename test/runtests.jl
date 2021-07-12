@@ -9,6 +9,7 @@ for filename in (
         "jop_derivative.jl",
         "jop_diagonal.jl",
         "jop_difference.jl",
+        "jop_erf.jl",
         "jop_exp.jl",
         "jop_gradient.jl",
         "jop_highpass.jl",
