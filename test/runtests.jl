@@ -36,6 +36,7 @@ for filename in (
         "jop_shift.jl",
         "jop_sigmoid.jl",
         "jop_taper.jl",
+        "jop_tanh.jl",
         "jop_translation.jl")
     include(filename)
 end
