@@ -41,5 +41,6 @@ include("jop_sigmoid.jl")
 include("jop_taper.jl")
 include("jop_tanh.jl")
 include("jop_translation.jl")
+include("jop_zero.jl")
 
 end
