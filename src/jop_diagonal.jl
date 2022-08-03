@@ -25,7 +25,7 @@ m = ones(domain(A))
 d = A*m # d = [1.0 ; 2.0 ; 3.0]
 ```
 """
-function JopDiagonal(diagonal::AbstractArray{T}) where {T}
+function JopDiagonal(diagonal::AbstractArray)
     spc = space(diagonal)
     JopLn(df! = JopDiagonal_df!, df′! = JopDiagonal_df′!, dom = spc, rng = spc, s = (diagonal=diagonal,))
 end
