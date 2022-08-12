@@ -40,7 +40,6 @@ function JopPad_df!(d::AbstractArray, m::AbstractArray; pad, extend, kwargs...)
     indices_rng = CartesianIndices(size(d))
     indices_dom = CartesianIndices(size(m))
     mpadₒ = modeloffset(pad)
-    dpadₒ = dataoffset(pad)
     for didx in indices_rng
         midx = shiftidx(mpadₒ, didx)
         if midx ∈ indices_dom
@@ -64,11 +63,10 @@ function JopPad_df′!(m::AbstractArray{T,N}, d::AbstractArray{T,N}; accumulate,
     m
 end
 
-function JopPad_df′!(extend::Val{true}, m::AbstractArray{T,N}, d::AbstractArray{T,N}, f::Function, pad) where {T,N}
+function JopPad_df′!(extend::Val{true}, m::AbstractArray{T,N}, d::AbstractArray{T,N}, _::Function, pad) where {T,N}
     indices_rng = CartesianIndices(size(d))
     indices_dom = CartesianIndices(size(m))
     mpadₒ = modeloffset(pad)
-    dpadₒ = dataoffset(pad)
     for didx in indices_rng
         midx = shiftidx(mpadₒ, didx)
         if midx ∈ indices_dom
