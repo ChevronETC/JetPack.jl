@@ -1,5 +1,5 @@
 """
-    A = JotOpBlend(T, nsamples, shottimes[, nsamples_blended])
+    A = JopBlend(T, nsamples, shottimes[, nsamples_blended])
 
 where `A` is a shot mixing operation, so that if `d=Am`, then `m::Array{T,2}` is a
 common receiver gather with each trace corresponding to a different shot.  The
@@ -11,7 +11,7 @@ time samples.  The size of `m` is `(nsamples,length(shottimes))`.  The size of
 
 ## blend two receiver gather traces:
 ```julia
-A = JotOpBlend(Float64, 128, [1,64])
+A = JopBlend(Float64, 128, [1,64])
 m = rand(domain(A))
 d = A*m # receiver gather with blended shots
 ```
