@@ -16,10 +16,10 @@ using JetPack, Jets, Test
     lhs, rhs = dot_product_test(A,m,d)
     @test lhs ≈ rhs
 
-    A = JopPermute(JetSpace(Float64,4), (1,), ([3;2;1;4],))
+    A = JopPermute(JetSpace(Float64,4), (1,), ([3;1;2;4],))
     m = [1. ; 2. ; 3. ; 4.]
     d = A*m
-    @test d ≈ [3. ; 2. ; 1. ; 4.]
+    @test d ≈ [3. ; 1. ; 2. ; 4.]
 
     m = rand(domain(A))
     d = rand(range(A))
