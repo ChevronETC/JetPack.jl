@@ -21,7 +21,7 @@ d = A*m # d = [32 31 ; 22 21 ; 12 11]
 # Notes:
 Currently, this is only implmented for 1D, 2D and 3D arrays.
 """
-JopPermute(sp, dims, perm) = JopLn(dom = sp, rng = sp, df! = JopPermute_df!, s = (dims=dims, perm=perm))
+JopPermute(sp, dims, perm) = JopLn(dom = sp, rng = sp, df! = JopPermute_df!, df′! = JopPermute_df′!, s = (dims=dims, perm=perm))
 
 export JopPermute
 
@@ -29,6 +29,11 @@ export JopPermute
 function JopPermute_df!(d::AbstractVector, m::AbstractVector; perm, kwargs...)
     d[:] = m[perm[1]]
     d
+end
+
+function JopPermute_df′!(m::AbstractVector, d::AbstractVector; perm, kwargs...)
+    m[:] = d[sortperm(perm[1])]
+    m
 end
 
 # 2D
@@ -43,6 +48,19 @@ function JopPermute_df!(d::AbstractMatrix, m::AbstractMatrix; perm, dims, kwargs
         end
     end
     d
+end
+
+function JopPermute_df′!(m::AbstractMatrix, d::AbstractMatrix; perm, dims, kwargs...)
+    m .= d
+    for i = length(dims) : (-1) : 1
+        if dims[i] == 1
+            m .= m[sortperm(perm[i]), :]
+        end
+        if dims[i] == 2
+            m .= m[:, sortperm(perm[i])]
+        end
+    end
+    m
 end
 
 # 3D
@@ -60,4 +78,20 @@ function JopPermute_df!(d::AbstractArray{T,3}, m::AbstractArray{T,3}; perm, dims
         end
     end
     d
+end
+
+function JopPermute_df′!(m::AbstractArray{T,3}, d::AbstractArray{T,3}; perm, dims, kwargs...) where {T}
+    m .= d
+    for i = length(dims) : (-1) : 1
+        if dims[i] == 1
+            m .= m[sortperm(perm[i]), :, :]
+        end
+        if dims[i] == 2
+            m .= m[:, sortperm(perm[i]), :]
+        end
+        if dims[i] == 3
+            m .= m[:, :, sortperm(perm[i])]
+        end
+    end
+    m
 end

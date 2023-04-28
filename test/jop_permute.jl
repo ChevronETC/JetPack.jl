@@ -6,10 +6,10 @@ using JetPack, Jets, Test
     d = A*m
     @test d ≈ [31. 32. ; 11. 12. ; 21. 22. ; 41. 42.]
 
-    A = JopPermute(JetSpace(Float64,3,2), (1,2), ([3;2;1],[2;1]))
+    A = JopPermute(JetSpace(Float64,3,2), (1,2), ([3;1;2],[2;1]))
     m = [11. 12. ; 21. 22. ; 31. 32.]
     d = A*m
-    @test d ≈ [32. 31. ; 22. 21. ; 12. 11.]
+    @test d ≈ [32. 31. ; 12. 11. ; 22. 21.]
 
     m = rand(domain(A))
     d = rand(range(A))
@@ -21,6 +21,15 @@ using JetPack, Jets, Test
     d = A*m
     @test d ≈ [3. ; 2. ; 1. ; 4.]
 
+    m = rand(domain(A))
+    d = rand(range(A))
+    lhs, rhs = dot_product_test(A,m,d)
+    @test lhs ≈ rhs
+
+    p1 = randperm(11)
+    p2 = randperm(13)
+    p3 = randperm(15)
+    A = JopPermute(JetSpace(Float64, 11, 13, 15), (2, 3, 1), (p2, p3, p1))
     m = rand(domain(A))
     d = rand(range(A))
     lhs, rhs = dot_product_test(A,m,d)
