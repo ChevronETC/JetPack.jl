@@ -5,6 +5,7 @@ using Jets
 using LinearAlgebra
 using SpecialFunctions
 using Statistics
+using Requires
 
 include("jop_atan.jl")
 include("jop_blend.jl")
@@ -41,5 +42,10 @@ include("jop_sigmoid.jl")
 include("jop_taper.jl")
 include("jop_tanh.jl")
 include("jop_translation.jl")
+
+### If Flux is loaded, users can wrap an auto-differentiable function as a Jet operator
+function __init__()
+    @require Flux="587475ba-b771-5e3f-ad9e-33799f191a9c" @eval include("jop_ad.jl")
+end
 
 end
