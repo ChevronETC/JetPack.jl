@@ -13,6 +13,7 @@ These operators include the following functionality:
 * Blending and projection operators
 * Operators implementing transcendental functions like logarithm and exponentiation, with linearization
 * Special functions as used in some full waveform inversion approaches, including *Normalized Integral Method* and linear non-analytic operators including taking real and imaginary parts
+* Wrapping an auto-differentiable Julia function as a Jet operator
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [docs-dev-url]: https://chevronetc.github.io/JetPack.jl/dev/

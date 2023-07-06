@@ -4,6 +4,7 @@ Random.seed!(101)
 
 for filename in (
         "jop_atan.jl",
+        "jop_ad.jl",
         "jop_blend.jl",
         "jop_circshift.jl",
         "jop_derivative.jl",

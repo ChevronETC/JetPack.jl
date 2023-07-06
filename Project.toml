@@ -1,16 +1,27 @@
 name = "JetPack"
 uuid = "24ef3835-3876-54c3-8a7a-956cf69ca0b2"
-version = "1.1.2"
+version = "1.2.0"
 
 [deps]
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 Jets = "2a57b368-ab28-5ba9-84aa-637fe7991822"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
+[weakdeps]
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+
+[extensions]
+JetPackFluxExt = "Flux"
+
 [compat]
 FFTW = "1"
+Flux = "0.12, 0.13"
 Jets = "^1.2"
 SpecialFunctions = "1, 2"
 julia = "1"
+
+[extras]
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"

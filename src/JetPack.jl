@@ -42,4 +42,14 @@ include("jop_taper.jl")
 include("jop_tanh.jl")
 include("jop_translation.jl")
 
+
+###### JetPack with Flux extension
+
+function JopAD end;
+export JopAD
+
+if !isdefined(Base, :get_extension)
+    include("../ext/JetPackFluxExt.jl")
+end
+
 end
