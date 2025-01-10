@@ -38,6 +38,7 @@ for filename in (
         "jop_sigmoid.jl",
         "jop_taper.jl",
         "jop_tanh.jl",
-        "jop_translation.jl")
+        "jop_translation.jl",
+        "jop_CubicSpline.jl")
     include(filename)
 end
