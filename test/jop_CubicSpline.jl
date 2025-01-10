@@ -1,6 +1,6 @@
 using Jets, LinearAlgebra, IterativeSolvers, Test, JetPack
 
-PLOTS = parse(Int32, get(ENV, "PLOTS", "0"))
+PLOTS = parse(Int32, get(ENV, "JP_PLOTS", "0"))
 
 n1 = 101
 n2 = 60
