@@ -21,10 +21,10 @@ function JopNormalize_f!(d::AbstractArray, m::AbstractArray; ϵ, mode)
 
     d .= m 
     for k3 ∈ 1:n3
-        (mode === :shot) && (norm = sqrt(dot(view(m,:,:,k3),view(m,:,:,k3))))
+        (mode === :shot) && (norm = @views sqrt(dot(m[:,:,k3],m[:,:,k3])))
         for k2 ∈ 1:n2
-            (mode === :trace) && (norm = sqrt(dot(view(m,:,k2,k3),view(m,:,k2,k3))))
-            view(d,:,k2,k3) ./= (norm + ϵ)
+            (mode === :trace) && (norm = @views sqrt(dot(m[:,k2,k3],m[:,k2,k3])))
+           d[,:,k2,k3] ./= (norm + ϵ)
         end
     end
     d
@@ -41,12 +41,12 @@ function JopNormalize_df!(δd::AbstractArray{T}, δm::AbstractArray{T}; mₒ, ϵ
     δd .= 0
 
     for k3 ∈ 1:n3
-        (mode === :shot) && (_corr = dot(view(_mₒ,:,:,k3), view(_δm,:,:,k3)))
-        (mode === :shot) && (_norm = dot(view(_mₒ,:,:,k3), view(_mₒ,:,:,k3)))
+        (mode === :shot) && (_corr = @views dot(_mₒ[:,:,k3], _δm[:,:,k3]))
+        (mode === :shot) && (_norm = @views dot(_mₒ[:,:,k3], _mₒ[:,:,k3]))
         for k2 ∈ 1:n2
-            (mode === :trace) && (_corr = dot(view(_mₒ,:,k2,k3), view(_δm,:,k2,k3)))
-            (mode === :trace) && (_norm = dot(view(_mₒ,:,k2,k3), view(_mₒ,:,k2,k3)))
-            view(_δd,:,k2,k3) .= view(_δm,:,k2,k3) ./ (sqrt(_norm) + ϵ) .- view(_mₒ,:,k2,k3) .* _corr ./ ((sqrt(_norm) + ϵ)^2 * sqrt(_norm))
+            (mode === :trace) && (_corr = dot(_mₒ[:,k2,k3], _δm[:,k2,k3]))
+            (mode === :trace) && (_norm = dot(_mₒ[:,k2,k3], _mₒ[:,k2,k3]))
+            _δd[:,k2,k3] .= @views _δm[:,k2,k3] ./ (sqrt(_norm) + ϵ) .- _mₒ[:,k2,k3] .* _corr ./ ((sqrt(_norm) + ϵ)^2 * sqrt(_norm))
         end
     end
     δd
