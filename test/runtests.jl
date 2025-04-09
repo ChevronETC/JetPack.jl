@@ -23,6 +23,7 @@ for filename in (
         "jop_mix.jl",
         "jop_nim.jl",
         "jop_normalize.jl",
+        "jop_normalize_byintegral.jl",
         "jop_pad.jl",
         "jop_permute.jl",
         "jop_permutedims.jl",
