@@ -24,7 +24,7 @@ function JopNormalize_f!(d::AbstractArray, m::AbstractArray; ϵ, mode)
         (mode === :shot) && (norm = sqrt(dot(m[:,:,k3],m[:,:,k3])))
         for k2 ∈ 1:n2
             (mode === :trace) && (norm = sqrt(dot(m[:,k2,k3],m[:,k2,k3])))
-           d[:,k2,k3] ./= (norm + ϵ)
+            d[:,k2,k3] ./= (norm + ϵ)
         end
     end
     d
