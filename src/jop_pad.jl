@@ -31,6 +31,7 @@ d = A*m # d = [0. 0. 11. 12. 0. ; 0. 0. 21. 22. 0. ; 0. 0. 0. 0. 0.]
 thinking of how to consolidate them.
 """
 function JopPad(dom::JetSpace{T}, pad::UnitRange...; extend=false, accumulate=false) where {T}
+    ndims(dom) == length(pad) || error("'pad' options and the number of dimensions in the domain must be consistent")
     JopLn(dom = dom, rng = JetSpace(T, map(length, pad)), df! = JopPad_df!, df′! = JopPad_df′!,
         s = (pad=pad, extend=extend, accumulate=accumulate))
 end
