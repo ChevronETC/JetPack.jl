@@ -46,7 +46,7 @@ function JopNormalize_df!(δd::AbstractArray{T}, δm::AbstractArray{T}; mₒ, ϵ
         for k2 ∈ 1:n2
             (mode === :trace) && (_corr = dot(_mₒ[:,k2,k3], _δm[:,k2,k3]))
             (mode === :trace) && (_norm = dot(_mₒ[:,k2,k3], _mₒ[:,k2,k3]))
-            _δd[:,k2,k3] .= _δm[:,k2,k3] ./ (sqrt(_norm) + ϵ) .- _mₒ[:,k2,k3] .* _corr ./ ((sqrt(_norm) + ϵ)^2 * sqrt(_norm))
+            _δd[:,k2,k3] .= _δm[:,k2,k3] ./ (sqrt(_norm) + ϵ) .- _mₒ[:,k2,k3] .* _corr ./ ((sqrt(_norm) + ϵ)^2 * sqrt(_norm + ϵ))
         end
     end
     δd
