@@ -31,6 +31,8 @@ for filename in (
         "jop_projection.jl",
         "jop_real.jl",
         "jop_reghost.jl",
+        "jop_relumin.jl",
+        "jop_relumax.jl",
         "jop_removedc.jl",
         "jop_reshape.jl",
         "jop_restriction.jl",
