@@ -218,7 +218,7 @@ function JopCubicSpline_df!(d::AbstractArray{T,3}, m::AbstractArray{T,3}; kernel
     nc2 = size(m,2)
     nc3 = size(m,3)
     for ic3 = 1:nc3
-        for k = iminmax3[ic3,1]:iminmax3[ic3,2]
+        Threads.@threads :static for k = iminmax3[ic3,1]:iminmax3[ic3,2]
             for ic2 = 1:nc2
                 for j = iminmax2[ic2,1]:iminmax2[ic2,2]
                     for ic1 = 1:nc1
@@ -238,7 +238,7 @@ function JopCubicSpline_df′!(m::AbstractArray{T,3}, d::AbstractArray{T,3}; ker
     nc1 = size(m,1)
     nc2 = size(m,2)
     nc3 = size(m,3)
-    for ic3 = 1:nc3
+    Threads.@threads :static for ic3 = 1:nc3
         for k = iminmax3[ic3,1]:iminmax3[ic3,2]
             for ic2 = 1:nc2
                 for j = iminmax2[ic2,1]:iminmax2[ic2,2]
@@ -262,7 +262,7 @@ function JopCubicSpline_df!(d::AbstractArray{T,4}, m::AbstractArray{T,4}; kernel
     nc = size(m,4)
     for c = 1:nc
         for ic3 = 1:nc3
-            for k = iminmax3[ic3,1]:iminmax3[ic3,2]
+            Threads.@threads :static for k = iminmax3[ic3,1]:iminmax3[ic3,2]
                 for ic2 = 1:nc2
                     for j = iminmax2[ic2,1]:iminmax2[ic2,2]
                         for ic1 = 1:nc1
@@ -285,7 +285,7 @@ function JopCubicSpline_df′!(m::AbstractArray{T,4}, d::AbstractArray{T,4}; ker
     nc3 = size(m,3)
     nc = size(m,4)
     for c = 1:nc
-        for ic3 = 1:nc3
+        Threads.@threads :static for ic3 = 1:nc3
             for k = iminmax3[ic3,1]:iminmax3[ic3,2]
                 for ic2 = 1:nc2
                     for j = iminmax2[ic2,1]:iminmax2[ic2,2]
