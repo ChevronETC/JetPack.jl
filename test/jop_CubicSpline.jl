@@ -1,7 +1,3 @@
-import Pkg
-if !any(dep.name == "IterativeSolvers" for dep in values(Pkg.dependencies()))
-    Pkg.add("IterativeSolvers")
-end
 using Jets, LinearAlgebra, IterativeSolvers, Test, JetPack
 
 PLOTS = parse(Int32, get(ENV, "JP_PLOTS", "0"))
