@@ -1,59 +1,89 @@
 """
-    A = JopCubicSpline(dom, rng)
+    A = JopCubicSpline(dom, rng[, n_active_dimensions])
 
 Cubic spline interpolation from coarse to fine grids.\\
 
-'dom': operator domain. It corresponds the B-spline control points (nodes) on the coarse grid\\
-'rng': operator range. It corresponds to the output array on the fine grid\\
+'dom': operator domain. It corresponds to the B-spline control points (nodes) on the coarse grid over the active dimensions, augmented with passive dimensions.\\
+'rng': operator range. It corresponds to the output array on the fine grid over the active dimensions, augmented with passive dimensions.\\
+'n_active_dimensions': number of active dimensions. It can only be 1, 2, or 3 but <= than the number of dimensions of the domain and range.
 
-The same constructor is used for 1D, 2D, 3D operators. The ND operator with N > 3 is simply a 3D operator applied to
-every slice in the hyper dimensions. Currently, only the 4D is implemented.
+The same constructor is used for `N`-dimensional operators. The ND operator with `N > n_active_dimensions` is simply a `n_active_dimensions`-D operator applied to
+every slice in the hyper dimensions.
+
+# Examples:
+
+```julia
+A = JopCubicSpline(JetSpace(Float64,10), JetSpace(Float64,10))
+m = ones(domain(A))
+d = A*m ## input and output are 1D and have the same size
+```
+
+```julia
+A = JopCubicSpline(JetSpace(Float64,5,2), JetSpace(Float64,10,2), 1)
+m = ones(domain(A))
+d = A*m ## input and output are 2D and have the same size along the second dimension; B-spline interpolation is applied along the first dimension only
+```
+
+```julia
+A = JopCubicSpline(JetSpace(Float64,5,5,5), JetSpace(Float64,10,20,30))
+B = JopCubicSpline(JetSpace(Float64,5,5,5), JetSpace(Float64,10,20,30), 3) ## same as A
+m = ones(domain(A))
+d = A*m ## input and output are 3D; B-spline interpolation is applied along all three dimensions
+```
+
+```julia
+A = JopCubicSpline(JetSpace(Float64,5,5,5,2,3), JetSpace(Float64,10,20,30,2,3))
+B = JopCubicSpline(JetSpace(Float64,5,5,5,2,3), JetSpace(Float64,10,20,30,2,3), 3) ## same as A
+m = ones(domain(A))
+d = A*m ## input and output are 5D and have the same size along the 4th and 5th dimensions; B-spline interpolation is applied along the first three dimensions
+```
 """
-function JopCubicSpline(dom::JetSpace{T,N}, rng::JetSpace{T,N}) where {T,N}
+function JopCubicSpline(dom::JetSpace{T,N}, rng::JetSpace{T,N}, na::Int=0) where {T,N}
 
     if N < 1
         error("Domain and range must be at least 1D")
     end
 
+    (na <= 0) && (na = min(3,N))
+
+    for i = na+1:N
+        if size(dom)[i] != size(rng)[i]
+            error("In passive dimensions, domain and range must have the same size")
+        end
+    end
+
+    # active dimensions
     n1 = size(rng)[1]
-    n2 = (N > 1) ? size(rng)[2] : nothing
-    n3 = (N > 2) ? size(rng)[3] : nothing
+    n2 = (na > 1) ? size(rng)[2] : nothing
+    n3 = (na > 2) ? size(rng)[3] : nothing
     nc1 = size(dom)[1]
-    nc2 = (N > 1) ? size(dom)[2] : nothing
-    nc3 = (N > 2) ? size(dom)[3] : nothing
+    nc2 = (na > 1) ? size(dom)[2] : nothing
+    nc3 = (na > 2) ? size(dom)[3] : nothing
 
     if nc1 > n1 || nc1 < 2
-        error("In dimension 1, the domain size must be > 1 and <= range size")
+        error("In active dimension 1, the domain size must be > 1 and <= range size")
     end
 
-    if N > 1 && (nc2 > n2 || nc2 < 2)
-        error("In dimension 2, the domain size must be > 1 and <= range size")
+    if na > 1 && (nc2 > n2 || nc2 < 2)
+        error("In active dimension 2, the domain size must be > 1 and <= range size")
     end
 
-    if N > 2 && (nc3 > n3 || nc3 < 2)
-        error("In dimension 3, the domain size must be > 1 and <= range size")
-    end
-
-    if N > 3
-        for i = 4:N
-            if size(rng)[i] != size(dom)[i]
-                error("Beyond dimension 3, domain and range must have the same size")
-            end
-        end
+    if na > 2 && (nc3 > n3 || nc3 < 2)
+        error("In active dimension 3, the domain size must be > 1 and <= range size")
     end
 
     # compute the 1D kernel for each node using the basic B-spline function
     # also save the support minmax of each node on the dense grid
     d1 = convert(T, (n1 - 1) / (nc1 - 1))
-    d2 = (N > 1) ? convert(T, (n2 - 1) / (nc2 - 1)) : nothing
-    d3 = (N > 2) ? convert(T, (n3 - 1) / (nc3 - 1)) : nothing
+    d2 = (na > 1) ? convert(T, (n2 - 1) / (nc2 - 1)) : nothing
+    d3 = (na > 2) ? convert(T, (n3 - 1) / (nc3 - 1)) : nothing
         
     kernel1 = zeros(T, n1, nc1)
-    kernel2 = (N > 1) ? zeros(T, n2, nc2) : nothing
-    kernel3 = (N > 2) ? zeros(T, n3, nc3) : nothing
+    kernel2 = (na > 1) ? zeros(T, n2, nc2) : nothing
+    kernel3 = (na > 2) ? zeros(T, n3, nc3) : nothing
     iminmax1 = zeros(Int, nc1, 2)
-    iminmax2 = (N > 1) ? zeros(Int, nc2, 2) : nothing
-    iminmax3 = (N > 2) ? zeros(Int, nc3, 2) : nothing
+    iminmax2 = (na > 1) ? zeros(Int, nc2, 2) : nothing
+    iminmax3 = (na > 2) ? zeros(Int, nc3, 2) : nothing
 
     # dimension 1
     for ic = 0:nc1-1
@@ -87,7 +117,7 @@ function JopCubicSpline(dom::JetSpace{T,N}, rng::JetSpace{T,N}) where {T,N}
     end
 
     # dimension 2
-    if N > 1
+    if na > 1
         for ic = 0:nc2-1
             mid = ic * d2
             imin = Int(floor(mid - 2 * d2))
@@ -120,7 +150,7 @@ function JopCubicSpline(dom::JetSpace{T,N}, rng::JetSpace{T,N}) where {T,N}
     end
     
     # dimension 3
-    if N > 2
+    if na > 2
         for ic = 0:nc3-1
             mid = ic * d3
             imin = Int(floor(mid - 2 * d3))
@@ -153,24 +183,78 @@ function JopCubicSpline(dom::JetSpace{T,N}, rng::JetSpace{T,N}) where {T,N}
     end
 
     JopLn(; dom, rng, df! = JopCubicSpline_df!, df′! = JopCubicSpline_df′!, 
-        s = (; kernel1, kernel2, kernel3, iminmax1, iminmax2, iminmax3))
+        s = (; kernel1, kernel2, kernel3, iminmax1, iminmax2, iminmax3, na))
 end
 
 export JopCubicSpline
 
-function JopCubicSpline_df!(d::AbstractArray{T,1}, m::AbstractArray{T,1}; kernel1, iminmax1, kwargs...) where {T}
+function JopCubicSpline_df!(d::AbstractArray{T,N}, m::AbstractArray{T,N}; na, kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3, kwargs...) where {T,N}
     d .= 0
+
+    # Loop over all dimensions beyond the active dimensions
+    extra_dims = size(d)[na+1:N]
+    indices = CartesianIndices(extra_dims)
+
+    if na == 3
+        for I in indices
+            idx = I.I
+            JopCubicSpline3D_df!(@view(d[:,:,:,idx...]), @view(m[:,:,:,idx...]); kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3)
+        end
+        return d
+    elseif na == 2
+        Threads.@threads :static for I in indices
+            idx = I.I
+            JopCubicSpline2D_df!(@view(d[:,:,idx...]), @view(m[:,:,idx...]); kernel1, iminmax1, kernel2, iminmax2)
+        end
+        return d
+    else
+        Threads.@threads :static for I in indices
+            idx = I.I
+            JopCubicSpline1D_df!(@view(d[:,idx...]), @view(m[:,idx...]); kernel1, iminmax1)
+        end
+        return d
+    end
+end
+
+function JopCubicSpline_df′!(m::AbstractArray{T,N}, d::AbstractArray{T,N}; na, kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3, kwargs...) where {T,N}
+    m .= 0
+
+    # Loop over all dimensions beyond the active dimensions
+    extra_dims = size(d)[na+1:N]
+    indices = CartesianIndices(extra_dims)
+
+    if na == 3
+        for I in indices
+            idx = I.I
+            JopCubicSpline3D_df′!(@view(m[:,:,:,idx...]), @view(d[:,:,:,idx...]); kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3)
+        end
+        return m
+    elseif na == 2
+        Threads.@threads :static for I in indices
+            idx = I.I
+            JopCubicSpline2D_df′!(@view(m[:,:,idx...]), @view(d[:,:,idx...]); kernel1, iminmax1, kernel2, iminmax2)
+        end
+        return m
+    else        
+        Threads.@threads :static for I in indices
+            idx = I.I
+            JopCubicSpline1D_df′!(@view(m[:,idx...]), @view(d[:,idx...]); kernel1, iminmax1)
+        end
+        return m
+    end
+end
+
+
+function JopCubicSpline1D_df!(d::AbstractArray{T,1}, m::AbstractArray{T,1}; kernel1, iminmax1) where {T}
     nc1 = size(m,1)
     for ic = 1:nc1
         for i = iminmax1[ic,1]:iminmax1[ic,2]
             d[i] += kernel1[i,ic] * m[ic]
         end
     end
-    d
 end
 
-function JopCubicSpline_df′!(m::AbstractArray{T,1}, d::AbstractArray{T,1}; kernel1, iminmax1, kwargs...) where {T}
-    m .= 0
+function JopCubicSpline1D_df′!(m::AbstractArray{T,1}, d::AbstractArray{T,1}; kernel1, iminmax1) where {T}
     nc1 = size(m,1)
     for ic = 1:nc1
         for i = iminmax1[ic,1]:iminmax1[ic,2]
@@ -180,8 +264,7 @@ function JopCubicSpline_df′!(m::AbstractArray{T,1}, d::AbstractArray{T,1}; ker
     m
 end
 
-function JopCubicSpline_df!(d::AbstractArray{T,2}, m::AbstractArray{T,2}; kernel1, iminmax1, kernel2, iminmax2, kwargs...) where {T}
-    d .= 0
+function JopCubicSpline2D_df!(d::AbstractArray{T,2}, m::AbstractArray{T,2}; kernel1, iminmax1, kernel2, iminmax2) where {T}
     nc1 = size(m,1)
     nc2 = size(m,2)
     for ic2 = 1:nc2
@@ -193,11 +276,9 @@ function JopCubicSpline_df!(d::AbstractArray{T,2}, m::AbstractArray{T,2}; kernel
             end
         end
     end
-    d
 end
 
-function JopCubicSpline_df′!(m::AbstractArray{T,2}, d::AbstractArray{T,2}; kernel1, iminmax1, kernel2, iminmax2, kwargs...) where {T}
-    m .= 0
+function JopCubicSpline2D_df′!(m::AbstractArray{T,2}, d::AbstractArray{T,2}; kernel1, iminmax1, kernel2, iminmax2) where {T}
     nc1 = size(m,1)
     nc2 = size(m,2)
     for ic2 = 1:nc2
@@ -209,11 +290,9 @@ function JopCubicSpline_df′!(m::AbstractArray{T,2}, d::AbstractArray{T,2}; ker
             end
         end
     end
-    m
 end
 
-function JopCubicSpline_df!(d::AbstractArray{T,3}, m::AbstractArray{T,3}; kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3, kwargs...) where {T}
-    d .= 0
+function JopCubicSpline3D_df!(d::AbstractArray{T,3}, m::AbstractArray{T,3}; kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3) where {T}
     nc1 = size(m,1)
     nc2 = size(m,2)
     nc3 = size(m,3)
@@ -230,11 +309,9 @@ function JopCubicSpline_df!(d::AbstractArray{T,3}, m::AbstractArray{T,3}; kernel
             end
         end
     end
-    d
 end
 
-function JopCubicSpline_df′!(m::AbstractArray{T,3}, d::AbstractArray{T,3}; kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3, kwargs...) where {T}
-    m .= 0
+function JopCubicSpline3D_df′!(m::AbstractArray{T,3}, d::AbstractArray{T,3}; kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3) where {T}
     nc1 = size(m,1)
     nc2 = size(m,2)
     nc3 = size(m,3)
@@ -251,55 +328,6 @@ function JopCubicSpline_df′!(m::AbstractArray{T,3}, d::AbstractArray{T,3}; ker
             end
         end
     end
-    m
-end
-
-function JopCubicSpline_df!(d::AbstractArray{T,4}, m::AbstractArray{T,4}; kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3, kwargs...) where {T}
-    d .= 0
-    nc1 = size(m,1)
-    nc2 = size(m,2)
-    nc3 = size(m,3)
-    nc = size(m,4)
-    for c = 1:nc
-        for ic3 = 1:nc3
-            Threads.@threads :static for k = iminmax3[ic3,1]:iminmax3[ic3,2]
-                for ic2 = 1:nc2
-                    for j = iminmax2[ic2,1]:iminmax2[ic2,2]
-                        for ic1 = 1:nc1
-                            for i = iminmax1[ic1,1]:iminmax1[ic1,2]
-                                d[i,j,k,c] += kernel1[i,ic1] * kernel2[j,ic2] * kernel3[k,ic3] * m[ic1,ic2,ic3,c]
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    d
-end
-
-function JopCubicSpline_df′!(m::AbstractArray{T,4}, d::AbstractArray{T,4}; kernel1, iminmax1, kernel2, iminmax2, kernel3, iminmax3, kwargs...) where {T}
-    m .= 0
-    nc1 = size(m,1)
-    nc2 = size(m,2)
-    nc3 = size(m,3)
-    nc = size(m,4)
-    for c = 1:nc
-        Threads.@threads :static for ic3 = 1:nc3
-            for k = iminmax3[ic3,1]:iminmax3[ic3,2]
-                for ic2 = 1:nc2
-                    for j = iminmax2[ic2,1]:iminmax2[ic2,2]
-                        for ic1 = 1:nc1
-                            for i = iminmax1[ic1,1]:iminmax1[ic1,2]
-                                m[ic1,ic2,ic3,c] += kernel1[i,ic1] * kernel2[j,ic2] * kernel3[k,ic3] * d[i,j,k,c]
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    m
 end
 
 """

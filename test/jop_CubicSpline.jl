@@ -6,39 +6,43 @@ n1 = 101
 n2 = 60
 n3 = 31
 n4 = 5
-
+n5 = 3
+n6 = 2
 nc1 = 51
 nc2 = 30
 nc3 = 31
-
+n = [n1, n2, n3, n4, n5, n6]
+nc = [nc1, nc2, nc3]
 maxiter = 5
 
-@testset "JopCubicSpline, dot product test - N = $(N)" for N = 1:4
+get_domain(N, na) = cat(nc[1:na], n[na+1:N], dims=1)
+get_range(N) = n[1:N]
 
-    dom, rng = nothing, nothing
-    if N == 1
-        dom = JetSpace(Float32, nc1)
-        rng = JetSpace(Float32, n1)
-    elseif N == 2
-        dom = JetSpace(Float32, nc1, nc2)
-        rng = JetSpace(Float32, n1, n2)
-    elseif N == 3
-        dom = JetSpace(Float32, nc1, nc2, nc3)
-        rng = JetSpace(Float32, n1, n2, n3)
-    elseif N == 4
-        dom = JetSpace(Float32, nc1, nc2, nc3, n4)
-        rng = JetSpace(Float32, n1, n2, n3, n4)
-    end
-    
-    A = JopCubicSpline(dom, rng)
+@testset "JopCubicSpline, dot product test - (N,n_active_dimensions) = ($(N),$(na))" for (N,na) in ((1,1), (5,1), (2,2), (5,2), (3,3), (5,3))
+    dom = JetSpace(Float32, get_domain(N, na)...)
+    rng = JetSpace(Float32, get_range(N)...)    
+    A = JopCubicSpline(dom, rng, na)
     lhs,rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
     @show lhs,rhs,(lhs-rhs)/(lhs+rhs)
     @test lhs ≈ rhs
 end
 
+@testset "JopCubicSpline, parity test - n_active_dimensions = $(na)" for na in (1, 2, 3)
+    n_shape = [1,1,1,1,1,1]
+    dom1 = JetSpace(Float32, nc[1:na]...)
+    rng1 = JetSpace(Float32, n[1:na]...)    
+    dom2 = JetSpace(Float32, cat(nc[1:na], n_shape[na+1:5], dims=1)...)
+    rng2 = JetSpace(Float32, cat(n[1:na], n_shape[na+1:5], dims=1)...)    
+    A1 = JopCubicSpline(dom1, rng1, na)
+    A2 = JopCubicSpline(dom2, rng2, na)
+    m1 = rand(Float32, size(domain(A1))...)
+    m2 = reshape(m1, size(domain(A2)))
+    d1 = A1 * m1
+    d2 = A2 * m2
+    @test reshape(d1, size(d2)) ≈ d2
+end
 
 @testset "JopCubicSpline, smoothing test - 1D" begin
-
     dom = JetSpace(Float32, nc1)
     rng = JetSpace(Float32, n1)
     factor = (n1 - 1) / (nc1 - 1)
