@@ -85,10 +85,10 @@ function JopInterp_apply_2d(domvec::AbstractArray, rngvec::AbstractArray, dom, r
             kxdom = clamp(floor(Int, (xx - xmin) / dxdom) + 1, 1, nxdom-1)
             kzdom = clamp(floor(Int, (zz - zmin) / dzdom) + 1, 1, nzdom-1)
 
-            x1 = xmin + dxdom * (kxdom - 1 + 0)
-            x2 = xmin + dxdom * (kxdom - 1 + 1)
-            z1 = zmin + dzdom * (kzdom - 1 + 0)
-            z2 = zmin + dzdom * (kzdom - 1 + 1)
+            x1 = xmin + dxdom * (kxdom - 1)
+            x2 = xmin + dxdom *  kxdom
+            z1 = zmin + dzdom * (kzdom - 1)
+            z2 = zmin + dzdom *  kzdom
 
             w1 = (x2 - xx) * (z2 - zz) / dxdzdom
             w2 = (xx - x1) * (z2 - zz) / dxdzdom
@@ -151,11 +151,11 @@ function JopInterp_apply_3d(domvec::AbstractArray, rngvec::AbstractArray, dom, r
                 kydom = clamp(floor(Int, (yy - ymin) / dydom) + 1, 1, nydom-1)
 
                 z1 = zmin + dzdom * (kzdom - 1)
-                z2 = zmin + dzdom * kzdom
+                z2 = zmin + dzdom *  kzdom
                 x1 = xmin + dxdom * (kxdom - 1)
-                x2 = xmin + dxdom * kxdom
+                x2 = xmin + dxdom *  kxdom
                 y1 = ymin + dydom * (kydom - 1)
-                y2 = ymin + dydom * kydom
+                y2 = ymin + dydom *  kydom
 
                 # trilinear weights (8 corners)
                 w1 = (x2-xx) * (y2-yy) * (z2-zz) / dxdydzdom
