@@ -20,7 +20,7 @@ n1,n2 = 20,5
 end
 
 @testset "JopNormalize, linearity test, T=$(T), n3=$n3, mode=$mode" for T in (Float32, Float64), n3 in (1,7), mode in (:trace,:shot)
-    ϵ = T(1.e-8)
+    ϵ = T(1.e-3)
     F = JopNormalize(JetSpace(T,n1,n2,n3);ϵ,mode)
     J = jacobian(F, rand(domain(F)))
     lhs,rhs = linearity_test(J)
@@ -30,14 +30,15 @@ end
 end
 
 @testset "JopNormalize, dot product test, T=$(T), n3=$n3, mode=$mode" for T in (Float32, Float64), n3 in (1,7), mode in (:trace,:shot)
-    F = JopNormalize(JetSpace(T,n1,n2,n3))
+    ϵ = T(1.e-3)
+    F = JopNormalize(JetSpace(T,n1,n2,n3); ϵ=ϵ, mode=mode)
     J  = jacobian!(F, rand(domain(F)))
     lhs, rhs = dot_product_test(J, -1 .+ 2 .* rand(domain(J)), -1 .+ 2 .* rand(range(J)))
     @test lhs ≈ rhs
 end
 
-@testset "JopNormalize, linearization test, T=$(T), n3=$n3, mode=$mode" for T in (Float32, Float64), n3 in (1,7), mode in (:trace,:shot)
-    F = JopNormalize(JetSpace(T,n1,n2,n3))
+@testset "JopNormalize, linearization test, T=$(T), n3=$n3, mode=$mode, ϵ=$(ϵ)" for T in (Float32, Float64), n3 in (1,7), mode in (:trace,:shot), ϵ in (1e-8, 1e-1)
+    F = JopNormalize(JetSpace(T,n1,n2,n3); ϵ=T(ϵ), mode=mode)
     m0 = rand(domain(F))
     δm = T(0.1) .* rand(domain(F))
     μ = ones(T, 10) 
