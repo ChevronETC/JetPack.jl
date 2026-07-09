@@ -8,6 +8,7 @@ for filename in (
         "jop_blend.jl",
         "jop_circshift.jl",
         "jop_clamp_c1.jl",
+        "jop_CubicSpline.jl",
         "jop_derivative.jl",
         "jop_diagonal.jl",
         "jop_difference.jl",
@@ -40,7 +41,6 @@ for filename in (
         "jop_sigmoid.jl",
         "jop_taper.jl",
         "jop_tanh.jl",
-        "jop_translation.jl",
-        "jop_CubicSpline.jl")
+        "jop_translation.jl")
     include(filename)
 end

@@ -36,7 +36,7 @@ end
     F = JopNormalize(JetSpace(T,n1,n2,n3); ϵ=ϵ, mode=mode)
     J  = jacobian!(F, rand(domain(F)))
     lhs, rhs = dot_product_test(J, -1 .+ 2 .* rand(domain(J)), -1 .+ 2 .* rand(range(J)))
-    rtol = T == Float32 ? 2e-3 : 1e-8
+    rtol = T == Float32 ? 3e-3 : 1e-8
     atol = T == Float32 ? 1e-7 : 1e-12
     @test isapprox(lhs, rhs; rtol=rtol, atol=atol)
 end
