@@ -88,10 +88,7 @@ The scattered nodes make it natural to parameterize only the sediment below a
    ```
 
 4. The full model is the frozen water plus the RBF sediment:
-
-   ```math
-   v(c) = v_\text{water} \cdot (\text{water mask}) + P\,c
-   ```
+   $v(c) = v_\text{water} \cdot (\text{water mask}) + P\,c$.
 
    In FWI you invert for $c$. The reduced gradient is $A'$ applied to the masked
    fine-grid gradient ($P' = A' S'$), so the water column is never updated: the
