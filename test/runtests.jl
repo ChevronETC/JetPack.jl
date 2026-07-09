@@ -7,6 +7,7 @@ for filename in (
         "jop_ad.jl",
         "jop_blend.jl",
         "jop_circshift.jl",
+        "jop_clamp_c1.jl",
         "jop_derivative.jl",
         "jop_diagonal.jl",
         "jop_difference.jl",

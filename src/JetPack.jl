@@ -9,6 +9,7 @@ using Statistics
 include("jop_atan.jl")
 include("jop_blend.jl")
 include("jop_circshift.jl")
+include("jop_clamp_c1.jl")
 include("jop_derivative.jl")
 include("jop_diagonal.jl")
 include("jop_difference.jl")
