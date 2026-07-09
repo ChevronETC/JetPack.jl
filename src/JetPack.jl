@@ -44,6 +44,7 @@ include("jop_taper.jl")
 include("jop_tanh.jl")
 include("jop_translation.jl")
 include("jop_CubicSpline.jl")
+include("jop_RBF.jl")
 
 
 ###### JetPack with Flux extension
