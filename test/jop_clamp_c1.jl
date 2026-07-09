@@ -1,6 +1,4 @@
-using LinearAlgebra, Jets, JetPack, Test, Random
-
-Random.seed!(1234)
+using LinearAlgebra, Jets, JetPack, Test
 
 @inline function _clamp_c1_forward_test(x::T, lo::T, hi::T, δ::T) where {T<:AbstractFloat}
     if x <= lo
