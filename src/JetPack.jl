@@ -10,6 +10,7 @@ include("jop_atan.jl")
 include("jop_blend.jl")
 include("jop_circshift.jl")
 include("jop_clamp_c1.jl")
+include("jop_CubicSpline.jl")
 include("jop_derivative.jl")
 include("jop_diagonal.jl")
 include("jop_difference.jl")
@@ -44,7 +45,6 @@ include("jop_spreadstack.jl")
 include("jop_taper.jl")
 include("jop_tanh.jl")
 include("jop_translation.jl")
-include("jop_CubicSpline.jl")
 
 
 ###### JetPack with Flux extension

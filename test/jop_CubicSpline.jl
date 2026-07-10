@@ -18,6 +18,14 @@ maxiter = 5
 get_domain(N, na) = cat(nc[1:na], n[na+1:N], dims=1)
 get_range(N) = n[1:N]
 
+regular_x1 = collect((LinRange(0f0, 1f0, nc1)))
+regular_x2 = collect((LinRange(0f0, 1f0, nc2)))
+regular_x3 = collect((LinRange(0f0, 1f0, nc3)))
+
+irregular_x1 = collect((LinRange(0f0, 1f0, nc1)) .^ 1.05f0)
+irregular_x2 = collect((LinRange(0f0, 1f0, nc2)) .^ 1.08f0)
+irregular_x3 = collect((LinRange(0f0, 1f0, nc3)) .^ 0.95f0)
+
 @testset "JopCubicSpline, dot product test - (N,n_active_dimensions) = ($(N),$(na))" for (N,na) in ((1,1), (5,1), (2,2), (5,2), (3,3), (5,3))
     dom = JetSpace(Float32, get_domain(N, na)...)
     rng = JetSpace(Float32, get_range(N)...)    
@@ -40,6 +48,27 @@ end
     d1 = A1 * m1
     d2 = A2 * m2
     @test reshape(d1, size(d2)) ≈ d2
+end
+
+@testset "JopCubicSpline, regular parity test - 4D" begin
+    dom = JetSpace(Float32, nc1, nc2, nc3, n4)
+    rng = JetSpace(Float32, n1, n2, n3, n4)
+
+    A = JopCubicSpline(dom, rng, 3)
+    B = JopCubicSpline(dom, rng, 3; x1=regular_x1, x2=regular_x2, x3=regular_x3)
+
+    m = rand(Float32, size(domain(A))...)
+    dA = A * m
+    dB = B * m
+    error = norm(dA - dB) / norm(dA)
+    @show error
+    @test error < eps(Float32   )
+    d = rand(Float32, size(range(A))...)
+    mA = A' * d
+    mB = B' * d
+    error = norm(mA - mB) / norm(mA)
+    @show error
+    @test error < eps(Float32)
 end
 
 @testset "JopCubicSpline, smoothing test - 1D" begin
@@ -201,6 +230,53 @@ end
         title("Smoothed")
         tight_layout()
         savefig("smoothing3D-MC.JopCubicSpline.png", dpi=100) 
+    end
+end
+
+@testset "JopCubicSpline, smoothing test - 3D with multicomponents - irregular" begin
+
+    dom = JetSpace(Float32, nc1, nc2, nc3, n4)
+    rng = JetSpace(Float32, n1, n2, n3, n4)
+    factor = (n1 - 1) * (n2 - 1) * (n3 - 1) / ((nc1 - 1) * (nc2 - 1) * (nc3 - 1))
+    
+    A = JopCubicSpline(dom, rng; x1=irregular_x1, x2=irregular_x2, x3=irregular_x3)
+
+    x = LinRange(0,1,n1)
+    y = LinRange(0,1,n2)
+    z = LinRange(0,1,n3)
+    xdec = LinRange(0,1,nc1)
+    ydec = LinRange(0,1,nc2)
+    zdec = LinRange(0,1,nc3)
+    d = zeros(Float32, n1, n2, n3, n4)
+    for iz = 1:n3
+        d[:,:,iz,1] .= (cos.(8 * π .* x)) * (cos.(8 * π .* y))' .* cos.(8 * π .* z[iz])
+    end
+    for c = 2:n4
+        d[:,:,:,c] .= d[:,:,:,1]
+    end
+    m = A' * d
+    m ./= factor
+    lsqr!(vec(m), vec(A), vec(d); maxiter = maxiter, verbose = true)
+    dsmth = A * m
+
+    @test norm(d - dsmth) / norm(d) < 0.01
+
+    if PLOTS == 1
+        using PyPlot
+        close("all")
+
+        figure(figsize=(8,8))
+        subplot(2,2,1)
+        imshow(d[:,:,div(n3,2),div(n4,2)], aspect="auto", extent=[0,1,1,0], clim=[-1, 1], cmap="seismic")
+        title("Original")
+        subplot(2,2,2)
+        imshow(m[:,:,div(nc3,2),div(n4,2)], aspect="auto", extent=[0,1,1,0], clim=[-1, 1], cmap="seismic")
+        title("Spline")
+        subplot(2,2,3)
+        imshow(dsmth[:,:,div(n3,2),div(n4,2)], aspect="auto", extent=[0,1,1,0], clim=[-1, 1], cmap="seismic")
+        title("Smoothed")
+        tight_layout()
+        savefig("smoothing3D-MC-irregular.JopCubicSpline.png", dpi=100) 
     end
 end
 
