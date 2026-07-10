@@ -51,7 +51,7 @@ end
     h = D == 1 ? 12 : D == 2 ? 12 : 6
     nodes = lattice_nodes(n, h)
     M = size(nodes, 2)
-    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = 1.5h)
+    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = 1.5h, precondition = false)
     d = A * ones(domain(A))
     @test all(x -> isapprox(x, 1.0; atol = 1e-12), d)   # full coverage => constant reproduced everywhere
 end
@@ -61,7 +61,7 @@ end
     h = D == 2 ? 12 : 6
     nodes = lattice_nodes(n, h)
     M = size(nodes, 2)
-    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = 1.5h)
+    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = 1.5h, precondition = false)
     c = rand(domain(A))                     # coefficients in [0,1]
     d = A * c
     @test all(x -> -1e-12 <= x <= 1 + 1e-12, d)
@@ -114,7 +114,7 @@ end
         deltas[1, j] = rad
         deltas[2, j] = rad
     end
-    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = deltas)
+    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = deltas, precondition = false)
     lhs, rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
     @test lhs ≈ rhs
     # constants still reproduced where covered
@@ -132,12 +132,35 @@ end
     n = (60, 50)
     nodes = lattice_nodes(n, 12)
     M = size(nodes, 2)
-    A = JopRBF(JetSpace(Float32, M), JetSpace(Float32, n...), Float32.(nodes); delta = 18.0f0)
+    A = JopRBF(JetSpace(Float32, M), JetSpace(Float32, n...), Float32.(nodes); delta = 18.0f0, precondition = false)
     @test eltype(domain(A)) == Float32
     lhs, rhs = dot_product_test(A, rand(domain(A)), rand(range(A)))
     @test lhs ≈ rhs
     d = A * ones(domain(A))
     @test all(x -> isapprox(x, 1f0; atol = 1f-5), d)
+end
+
+@testset "JopRBF, precondition=true equalizes column norms (multiresolution)" begin
+    # a node cloud with support that varies ~4x with depth => the raw kernel has a big column-norm (support-
+    # size) imbalance; the default precondition=true rescales each coefficient by 1/‖A e_j‖ so the columns are
+    # ~equal norm (order unity), while keeping an exact adjoint. This is the Jacobi preconditioner for a
+    # reduced-parameterization inverse problem, moved into the operator at construction.
+    n = (120, 90)
+    nodes = lattice_nodes(n, 12)
+    M = size(nodes, 2)
+    deltas = zeros(2, M)
+    for j = 1:M
+        rad = 14.0 + 40.0 * (nodes[1, j] - 1) / (n[1] - 1)   # 14 shallow -> 54 deep
+        deltas[1, j] = rad; deltas[2, j] = rad
+    end
+    colnorms(A) = [norm(A * setindex!(zeros(domain(A)), 1.0, j)) for j in 1:M]
+    spread(v) = maximum(v) / minimum(v)
+    A0 = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = deltas, precondition = false)
+    A1 = JopRBF(JetSpace(Float64, M), JetSpace(Float64, n...), nodes; delta = deltas, precondition = true)
+    @test spread(colnorms(A0)) > 3.0              # raw kernel: large support-size imbalance
+    @test spread(colnorms(A1)) < 1.5              # preconditioned: ~order unity
+    lhs, rhs = dot_product_test(A1, rand(domain(A1)), rand(range(A1)))
+    @test lhs ≈ rhs                               # exact adjoint preserved under the preconditioner
 end
 
 nothing

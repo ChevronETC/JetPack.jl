@@ -54,6 +54,19 @@ every axis. The support must be large enough that every fine point of interest i
 within some node's support; fine points not covered by any node (`Σ_j φ = 0`) map
 to zero.
 
+`precondition` (default `true`): scale each node coefficient by `1/‖A e_j‖` (the
+column norm, computed exactly from the kernel at construction) so the operator's
+columns are ~equal norm and a unit coefficient maps to an order-unity model
+perturbation. This removes the node support-size bias (dense small-support nodes vs
+sparse large-support nodes), which is what a reduced-parameterization inverse
+problem wants: a diagonal (Jacobi) preconditioner that makes the reduced
+Gauss-Newton Gram `AᵀA` have ~unit diagonal. It trades away the raw kernel's exact
+partition-of-unity / constant-reproduction (the all-ones coefficient no longer maps
+to a constant); set `precondition = false` for the pure normalized RBF.
+`precondition_weight` (optional, a range-sized array `w`): balance `‖diag(w) A e_j‖`
+instead of `‖A e_j‖`, for when a fine-grid diagonal `diag(w)` is applied downstream
+(e.g. an FWI illumination), so the FULL operator `diag(w) A` is column-balanced.
+
 # Examples
 
 ```julia
@@ -71,12 +84,15 @@ deltas = vcat(fill(15.0, 1, M), fill(15.0, 1, M))   # here isotropic, but may va
 A = JopRBF(JetSpace(Float64,M), JetSpace(Float64,nz,nx), nodes; delta = deltas)
 ```
 """
-function JopRBF(dom::JetSpace{T,1}, rng::JetSpace{T,D}, nodes::AbstractMatrix; delta) where {T,D}
+function JopRBF(dom::JetSpace{T,1}, rng::JetSpace{T,D}, nodes::AbstractMatrix; delta,
+               precondition::Bool = true, precondition_weight = nothing) where {T,D}
     (D >= 1 && D <= 3) || error("JopRBF supports 1, 2 or 3 spatial (range) dimensions, got $D")
     M = size(dom)[1]
     n = size(rng)
     size(nodes) == (D, M) ||
         error("nodes must be (ndims(range)=$D) x (length(domain)=$M), got $(size(nodes))")
+    precondition_weight === nothing || size(precondition_weight) == n ||
+        error("precondition_weight must match the range size $(n), got $(size(precondition_weight))")
 
     δ = _delta_matrix(delta, D, M)                     # (D, M) per-node per-axis radii
     all(x -> x > 0, δ) || error("delta must be positive")
@@ -88,9 +104,13 @@ function JopRBF(dom::JetSpace{T,1}, rng::JetSpace{T,D}, nodes::AbstractMatrix; d
     nodesf = Matrix{Float64}(nodes)
     buckets = _build_buckets(nodesf, bucketsize)
     invw = _build_invw(n, nodesf, δ, bucketsize, buckets)
+    # optional construction-time diagonal (Jacobi) preconditioner: scale each node coefficient by 1/‖A e_j‖
+    # so the operator's columns are ~equal norm (a unit coefficient -> an order-unity model perturbation,
+    # removing the node support-size bias). Computed EXACTLY from the kernel; ones when precondition=false.
+    colscale = precondition ? _column_scale(n, nodesf, δ, invw, precondition_weight) : ones(Float64, M)
 
     JopLn(; dom, rng, df! = JopRBF_df!, df′! = JopRBF_df′!,
-        s = (; nodes = nodesf, delta = δ, bucketsize, buckets, invw))
+        s = (; nodes = nodesf, delta = δ, bucketsize, buckets, invw, colscale))
 end
 
 export JopRBF
@@ -165,11 +185,45 @@ end
     w
 end
 
+# exact per-node column norm of the operator (optionally weighted): for node j, sum over its support box the
+# squared normalized-basis value (φ_j·invw) times the optional fine-grid weight². Enumerates the SAME (node,
+# fine-point) pairs as the adjoint, so it is exact. Returns the preconditioner scale = median(‖·‖)/‖A e_j‖,
+# clamped to [0.1, 10], so a unit coefficient maps to an order-unity model perturbation.
+_median(v::AbstractVector{Float64}) = (s = sort(v); m = length(s); iseven(m) ? (s[m ÷ 2] + s[m ÷ 2 + 1]) / 2 : s[(m + 1) ÷ 2])
+
+function _column_scale(n::NTuple{D,Int}, nodes::Matrix{Float64}, delta::Matrix{Float64}, invw, weight) where {D}
+    M = size(nodes, 2)
+    d = zeros(Float64, M)
+    Threads.@threads :static for j = 1:M
+        xlo = ntuple(k -> max(1, ceil(Int, nodes[k, j] - delta[k, j])), D)
+        xhi = ntuple(k -> min(n[k], floor(Int, nodes[k, j] + delta[k, j])), D)
+        acc = 0.0
+        for I in CartesianIndices(ntuple(k -> xlo[k]:xhi[k], D))
+            x = Tuple(I)
+            r2 = 0.0
+            @inbounds for k = 1:D
+                dk = (x[k] - nodes[k, j]) / delta[k, j]
+                r2 += dk * dk
+            end
+            if r2 < 1.0
+                w = weight === nothing ? 1.0 : Float64(weight[I])
+                a = wendland_c2(sqrt(r2)) * invw[I] * w
+                acc += a * a
+            end
+        end
+        @inbounds d[j] = sqrt(acc)
+    end
+    pos = filter(>(0), d)
+    dref = isempty(pos) ? 1.0 : _median(pos)
+    [clamp(dref / max(dj, dref * 1e-3), 0.1, 10.0) for dj in d]
+end
+
 #
 # forward: thread over fine points, gather nearby nodes via the bucket index
 # (each fine point writes only its own output, so no data races).
 #
-function JopRBF_df!(d::AbstractArray{T,D}, c::AbstractVector{T}; nodes, delta, bucketsize, buckets, invw, kwargs...) where {T,D}
+function JopRBF_df!(d::AbstractArray{T,D}, c::AbstractVector{T}; nodes, delta, bucketsize, buckets, invw, colscale, kwargs...) where {T,D}
+    cc = colscale .* c                                 # construction-time column preconditioner (ones if off)
     Threads.@threads :static for I in CartesianIndices(d)
         x = Tuple(I)
         bx = ntuple(k -> floor(Int, x[k] / bucketsize[k]), D)
@@ -186,7 +240,7 @@ function JopRBF_df!(d::AbstractArray{T,D}, c::AbstractVector{T}; nodes, delta, b
                     r2 += dk * dk
                 end
                 if r2 < 1.0
-                    @inbounds num += wendland_c2(sqrt(r2)) * c[j]
+                    @inbounds num += wendland_c2(sqrt(r2)) * cc[j]
                 end
             end
         end
@@ -200,7 +254,7 @@ end
 # node writes only its own coefficient, so no data races). This enumerates the
 # same (fine point, node) pairs as the forward, so it is the exact transpose.
 #
-function JopRBF_df′!(c::AbstractVector{T}, d::AbstractArray{T,D}; nodes, delta, bucketsize, buckets, invw, kwargs...) where {T,D}
+function JopRBF_df′!(c::AbstractVector{T}, d::AbstractArray{T,D}; nodes, delta, bucketsize, buckets, invw, colscale, kwargs...) where {T,D}
     n = size(d)
     Threads.@threads :static for j = 1:length(c)
         xlo = ntuple(k -> max(1, ceil(Int, nodes[k, j] - delta[k, j])), D)
@@ -217,7 +271,7 @@ function JopRBF_df′!(c::AbstractVector{T}, d::AbstractArray{T,D}; nodes, delta
                 @inbounds acc += wendland_c2(sqrt(r2)) * (convert(Float64, d[I]) * invw[I])
             end
         end
-        @inbounds c[j] = convert(T, acc)
+        @inbounds c[j] = convert(T, acc * colscale[j])
     end
     c
 end
