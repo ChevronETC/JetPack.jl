@@ -8,7 +8,6 @@ for filename in (
         "jop_blend.jl",
         "jop_circshift.jl",
         "jop_CubicSpline.jl",
-        "jop_CubicSplineIR.jl",
         "jop_derivative.jl",
         "jop_diagonal.jl",
         "jop_difference.jl",
