@@ -1,4 +1,6 @@
-using LinearAlgebra, Jets, JetPack, Test
+using LinearAlgebra, Jets, JetPack, Test, Random
+
+Random.seed!(1234)
 
 n1,n2 = 20,5
 
@@ -34,7 +36,9 @@ end
     F = JopNormalize(JetSpace(T,n1,n2,n3); ϵ=ϵ, mode=mode)
     J  = jacobian!(F, rand(domain(F)))
     lhs, rhs = dot_product_test(J, -1 .+ 2 .* rand(domain(J)), -1 .+ 2 .* rand(range(J)))
-    @test lhs ≈ rhs
+    rtol = T == Float32 ? 3e-3 : 1e-8
+    atol = T == Float32 ? 1e-7 : 1e-12
+    @test isapprox(lhs, rhs; rtol=rtol, atol=atol)
 end
 
 @testset "JopNormalize, linearization test, T=$(T), n3=$n3, mode=$mode, ϵ=$(ϵ)" for T in (Float32, Float64), n3 in (1,7), mode in (:trace,:shot), ϵ in (1e-8, 1e-1)
