@@ -1,31 +1,27 @@
-# Figure generation for JopRBF in a water-bottom "freeze" workflow.
-#
-# Builds a 101 x 201 (nz x nx) velocity model with a sloping water bottom,
-# parameterizes only the sediment below the water bottom with a scattered RBF node
-# cloud, and freezes the water column. Produces
-# docs/JopRBF/images/jopRBF_waterbottom_2d.png.
-#
-# Node placement is done by Gmsh (a JLL-backed mesh generator): the sediment below
-# the water bottom is meshed with a size field spacing(z) = lambda(z) / ppw(z),
-# where ppw(z) is linear in depth (denser shallow, sparser deep). The water bottom
-# is embedded as a boundary curve, so mesh nodes land on it; the mesh vertices are
-# used as the RBF centers. The figure compares the parameterization at several
-# inversion frequencies (lower frequency = longer wavelength = coarser node
-# spacing). Gmsh and PyPlot live in this directory's local project
-# (docs/JopRBF/Project.toml), not in JetPack itself.
-#
-# The reduced parameterization operator is  P = S_below ∘ A_RBF , where A_RBF maps
-# node coefficients to the fine grid and S_below (a JopDiagonal mask) restricts the
-# update to below the water bottom. The full model is
-#     v(c) = v_water · (water mask)  +  P c
-# so the water column is frozen (never a function of c).
-#
-# Run (uses the local project alongside this script):
-#   julia --startup-file=no --project=docs/JopRBF -t 8 docs/JopRBF/JopRBF_waterbottom_demo.jl
-#
+#=
+Figure generation for JopRBF in a water-bottom "freeze" workflow.
+
+Builds a 101 x 201 (nz x nx) velocity model with a sloping water bottom, parameterizes only the sediment
+below the water bottom with a depth-tapered scattered RBF node cloud, and freezes the water column. Produces
+docs/JopRBF/images/jopRBF_waterbottom_2d.png.
+
+Node placement is done by the hand-rolled `tapered_rbf_nodes` (rbf_tapered_nodes.jl, pure base Julia, NO
+external mesher): brick-offset rows below the water bottom with spacing(z) = v_trend(z) / (freq * ppw(z)),
+ppw linear in depth (dense shallow, sparse deep). The figure compares the parameterization at several
+inversion frequencies (lower frequency = longer wavelength = coarser node spacing). Only PyPlot lives in
+this directory's local project (docs/JopRBF/Project.toml), not in JetPack itself.
+
+The reduced parameterization operator is  P = S_below ∘ A_RBF , where A_RBF maps node coefficients to the
+fine grid and S_below (a JopDiagonal mask) restricts the update to below the water bottom. The full model is
+    v(c) = v_water · (water mask)  +  P c
+so the water column is frozen (never a function of c).
+
+Run (uses the local project alongside this script):
+  julia --startup-file=no --project=docs/JopRBF -t 8 docs/JopRBF/JopRBF_waterbottom_demo.jl
+=#
 ENV["MPLBACKEND"] = "Agg"
 using JetPack, Jets, LinearAlgebra, Random, Printf, PyPlot
-using Gmsh: gmsh
+include(joinpath(@__DIR__, "rbf_tapered_nodes.jl"))
 
 Random.seed!(20260709)
 const OUT = joinpath(@__DIR__, "images")
@@ -34,20 +30,17 @@ isdir(OUT) || mkpath(OUT)
 nz, nx = 101, 201
 vwater = 1500.0
 dz = dx = 10.0          # grid spacing [m]
-ppw_zmin = 6.0          # points per wavelength at zmin (the water bottom)
-ppw_zmax = 4.0          # points per wavelength at zmax (model bottom); == ppw_zmin => resolution-matched (spacing tracks wavelength). Lower it to deliberately coarsen with depth.
-support = 1.5           # node support radius = support * local spacing
-max_deep_ratio = 1.35   # cap the coarsest node spacing at this * the shallow spacing (fills deep/bottom holes; Inf = no cap)
-mesh_smoothing = 100    # Gmsh Laplacian smoothing passes ("go hard" on iterative refinement)
-node_ms = 25            # node marker size in the figure [points^2]
+ppw_top = 6.0           # points per wavelength at the water bottom (dense, shallow)
+ppw_bot = 4.0           # points per wavelength at the model bottom (sparse, deep)
+support = 1.6           # node support radius = support * local node spacing
+node_ms = 22            # node marker size in the figure [points^2]
 freqs = (6.0, 3.0, 1.5) # inversion frequencies to compare (lower freq -> coarser node spacing) [Hz]
 flabel(f) = @sprintf("%g", f)   # frequency label without trailing zeros (6.0 -> "6", 1.5 -> "1.5")
 
 # sloping water bottom: 12 samples deep on the left, 38 on the right
 wbdepth(ix) = 12.0 + (38.0 - 12.0) * (ix - 1) / (nx - 1)
 
-# "true" model: constant water above the water bottom, v(z) sediment plus two
-# smooth anomalies below it
+# "true" model: constant water above the water bottom, v(z) sediment plus two smooth anomalies below it
 function true_model()
     v = fill(vwater, nz, nx)
     for ix = 1:nx, iz = 1:nz
@@ -62,73 +55,23 @@ function true_model()
     v
 end
 
-# Gmsh meshing of the sediment below the water bottom with a depth-dependent size
-# field spacing(z) = v_avg(z) / (freq * ppw(z)), ppw linear from ppw_zmin (WB) to
-# ppw_zmax (model bottom). Lower freq => longer wavelength => coarser node spacing.
-# The WB is embedded so mesh nodes land on it. Returns nodes (2 x M) and per-node
-# support radii (2 x M).
-function gmsh_nodes(freq)
-    minwb = minimum(wbdepth(ix) for ix = 1:nx)
-    rfun(z) = (1650.0 + 0.4 * max(0.0, z - minwb) * dz) /
-              (freq * (ppw_zmin + (ppw_zmax - ppw_zmin) * clamp((z - minwb) / (nz - minwb), 0.0, 1.0))) / dz
-
-    gmsh.initialize()
-    gmsh.option.setNumber("General.Terminal", 0)
-    gmsh.model.add("wb")
-
-    # domain = trapezoid below the water bottom, corners in (x, z) = (lateral, depth)
-    p1 = gmsh.model.geo.addPoint(1.0, wbdepth(1), 0.0)          # WB, left
-    p2 = gmsh.model.geo.addPoint(Float64(nx), wbdepth(nx), 0.0) # WB, right
-    p3 = gmsh.model.geo.addPoint(Float64(nx), Float64(nz), 0.0) # bottom right
-    p4 = gmsh.model.geo.addPoint(1.0, Float64(nz), 0.0)         # bottom left
-    lwb = gmsh.model.geo.addLine(p1, p2)                        # water bottom (embedded => nodes on it)
-    lr = gmsh.model.geo.addLine(p2, p3)
-    lb = gmsh.model.geo.addLine(p3, p4)
-    ll = gmsh.model.geo.addLine(p4, p1)
-    cl = gmsh.model.geo.addCurveLoop([lwb, lr, lb, ll])
-    gmsh.model.geo.addPlaneSurface([cl])
-    gmsh.model.geo.synchronize()
-
-    # size field: spacing(depth y) = vavg(y) / (fmean * ppw(y)) / dz, ppw linear in y
-    frac = "max(0,min(1,(y-$(minwb))/$(nz - minwb)))"
-    ppwe = "($(ppw_zmin)+($(ppw_zmax)-$(ppw_zmin))*$(frac))"
-    vavg = "(1650+0.4*max(0,y-$(minwb))*$(dz))"
-    sizeexpr = "$(vavg)/($(freq)*$(ppwe))/$(dz)"
-    fid = gmsh.model.mesh.field.add("MathEval")
-    gmsh.model.mesh.field.setString(fid, "F", sizeexpr)
-    gmsh.model.mesh.field.setAsBackgroundMesh(fid)
-    gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)
-    gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
-    # cap the coarsest spacing (relative to the shallow spacing) so the deep/bottom
-    # does not develop gaps; scales with frequency so all panels are treated alike
-    gmsh.option.setNumber("Mesh.MeshSizeMax", max_deep_ratio * 1650.0 / (freq * ppw_zmin) / dz)
-    gmsh.option.setNumber("Mesh.Algorithm", 6)                 # Frontal-Delaunay (uniform, well-shaped triangles)
-    gmsh.option.setNumber("Mesh.Smoothing", mesh_smoothing)    # iterative Laplacian smoothing of interior nodes
-    gmsh.option.setNumber("Mesh.Optimize", 1)
-    gmsh.model.mesh.generate(2)
-
-    _, coord, _ = gmsh.model.mesh.getNodes()
-    gmsh.finalize()
-
-    c = reshape(coord, 3, :)                                    # rows: x, y(=z), z(=0)
-    xs = c[1, :]; zs = c[2, :]
-    nodes = permutedims(hcat(zs, xs))                          # (2, M): row1 = z, row2 = x
-    rads = Float64[support * rfun(z) for z in zs]
-    deltas = permutedims(hcat(rads, rads))
-    nodes, deltas
-end
-
 vtrue = true_model()
 
-# below-water-bottom mask and the frozen water field (shared across frequencies)
-below = [iz > wbdepth(ix) for iz = 1:nz, ix = 1:nx]
+# per-column water bottom (fine-grid index), below-WB mask, frozen water field, and a linear v(z) trend
+wbcol = [clamp(round(Int, wbdepth(ix)), 1, nz) for ix = 1:nx]
+below = [iz >= wbcol[ix] for iz = 1:nz, ix = 1:nx]
 water_field = vwater .* .!below
+a0, b0 = linear_vtrend(vtrue, wbcol)
+vtrend = iz -> a0 + b0 * (iz - 1)
 
-# build the RBF parameterization at a given frequency: mesh -> operator -> fit
+# build the RBF parameterization at a given frequency: tapered node cloud -> operator -> fit coefficients.
+# precondition = false keeps the raw partition-of-unity kernel (best for a least-squares FIT / representation
+# demo; the column-balancing precondition=true default is for reduced-parameterization inversion instead).
 function build_rbf(freq)
-    nodes, deltas = gmsh_nodes(freq)
+    nodes, deltas = tapered_rbf_nodes(nz, nx; wb = wbcol, vtrend = vtrend, freq = freq, dz = dz,
+        ppw_top = ppw_top, ppw_bot = ppw_bot, support = support)
     M = size(nodes, 2)
-    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, nz, nx), nodes; delta = deltas)
+    A = JopRBF(JetSpace(Float64, M), JetSpace(Float64, nz, nx), nodes; delta = deltas, precondition = false)
     P = JopDiagonal(Float64.(below)) ∘ A            # freeze the water column
     pou = A * ones(domain(A))
     c = convert(Matrix, P) \ vec(vtrue .* below)    # fit coefficients to the true sediment
@@ -143,7 +86,7 @@ res = [build_rbf(f) for f in freqs]
 
 # ---------------------------------------------------------------------------
 # figure: 4 rows x 2 cols
-#   true model | coverage ;  6 Hz RBF | 6 Hz error ;  3 Hz | error ;  1 Hz | error
+#   true model | coverage ;  6 Hz RBF | 6 Hz error ;  3 Hz | error ;  1.5 Hz | error
 # ---------------------------------------------------------------------------
 ext = [0.5, nx + 0.5, nz + 0.5, 0.5]
 wbline = [wbdepth(ix) for ix = 1:nx]
@@ -180,7 +123,7 @@ title("coverage below WB  A·1 ≈ 1  ($(flabel(freqs[1])) Hz, water frozen whit
 # rows 2-4: one frequency per row
 for (i, f) in enumerate(freqs)
     r = res[i]
-    modelpanel(2i + 1, r.vmodel, "$(flabel(f)) Hz RBF  ($(r.M) nodes)"; nodes = r.nodes)
+    modelpanel(2i + 1, r.vmodel, "$(flabel(f)) Hz RBF  ($(r.M) nodes, ppw $(flabel(ppw_top))→$(flabel(ppw_bot)))"; nodes = r.nodes)
     errpanel(2i + 2, r.relerr, @sprintf("%s Hz error  (RMS %.4f)", flabel(f), r.rms))
 end
 

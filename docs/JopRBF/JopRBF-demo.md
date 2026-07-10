@@ -8,9 +8,8 @@ and a matrix-free implementation that scales to very large grids (for example
 1000^3).
 
 This directory holds the operator's demo scripts and the figures below. The demos
-use a local project (`docs/JopRBF/Project.toml`) that adds PyPlot and Gmsh
-alongside a dev'd JetPack, so those plotting/meshing dependencies stay out of
-JetPack itself:
+use a local project (`docs/JopRBF/Project.toml`) that adds PyPlot alongside a
+dev'd JetPack, so the plotting dependency stays out of JetPack itself:
 
 ```
 julia --startup-file=no --project=docs/JopRBF -t 8 docs/JopRBF/JopRBF_waterbottom_demo.jl   # water-bottom comparison figure
@@ -73,12 +72,13 @@ The scattered nodes make it natural to parameterize only the sediment below a
 (possibly dipping) water bottom while freezing the water column.
 
 1. Get the water-bottom depth `wb(x)` (for example from `water_bottom_index`).
-2. Mesh the sediment below the water bottom with [Gmsh](https://gmsh.info) using a
-   size field $h(z) = \lambda(z)/\text{ppw}(z)$ with $\lambda(z) = v(z)/f$, so the
-   node spacing follows a points-per-wavelength rule (denser where the wavelength
-   is short). The water bottom is embedded as a boundary curve, so mesh vertices
-   land on it, and the mesh vertices are used as the RBF centers. Gmsh runs from
-   the demo's local project, not from JetPack.
+2. Place the RBF centers below the water bottom with a depth-tapered scattered
+   cloud ([`tapered_rbf_nodes`](rbf_tapered_nodes.jl), pure base Julia, no external
+   mesher): brick-offset rows with spacing $h(z) = \lambda(z)/\text{ppw}(z)$,
+   $\lambda(z) = v(z)/f$, so the node spacing follows a points-per-wavelength rule
+   (denser where the wavelength is short), with `ppw` tapering linearly with depth
+   (dense at the water bottom, sparse at depth). A water-bottom-conforming row
+   lands the shallowest nodes on the water bottom.
 3. Build the reduced parameterization operator as a composition:
 
    ```julia
@@ -101,14 +101,14 @@ The scattered nodes make it natural to parameterize only the sediment below a
 **Figure 1**, produced by
 [`JopRBF_waterbottom_demo.jl`](JopRBF_waterbottom_demo.jl), shows this on a 101×201
 model with a sloping water bottom, comparing three inversion frequencies (lower
-frequency $\Rightarrow$ longer wavelength $\Rightarrow$ coarser mesh). Row 1: the
-true model, and the partition-of-unity coverage below the water bottom (water shown
-white). Rows 2-4: the frozen-water + RBF parameterization at 6, 3 and 1 Hz (mesh
-nodes overlaid) next to the signed relative error $\Delta v/v$ (red/blue, shared
-color scale). Node counts follow the size field: 6 Hz ≈ 737 nodes (0.0003 RMS),
-3 Hz ≈ 207 (0.0008), 1 Hz ≈ 34 (0.0075) below-WB relative error. The 1 Hz case is
-coarse because its wavelength exceeds the model depth (Gmsh meshes to the size
-field; it does not add points to fit the data).
+frequency $\Rightarrow$ longer wavelength $\Rightarrow$ coarser node cloud). Row 1:
+the true model, and the partition-of-unity coverage below the water bottom (water
+shown white). Rows 2-4: the frozen-water + RBF parameterization at 6, 3 and 1.5 Hz
+(nodes overlaid) next to the signed relative error $\Delta v/v$ (red/blue, shared
+color scale). Node counts follow the points-per-wavelength taper: 6 Hz ≈ 474 nodes
+(33× reduction, 0.006 RMS), 3 Hz ≈ 128 (121×, 0.010), 1.5 Hz ≈ 43 (360×, 0.010)
+below-WB relative error. Lower frequency = fewer nodes = a smoother, coarser
+representation.
 
 ![Figure 1: water bottom freeze workflow](images/jopRBF_waterbottom_2d.png)
 
