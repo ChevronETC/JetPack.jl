@@ -74,11 +74,16 @@ The scattered nodes make it natural to parameterize only the sediment below a
 1. Get the water-bottom depth `wb(x)` (for example from `water_bottom_index`).
 2. Place the RBF centers below the water bottom with a depth-tapered scattered
    cloud ([`tapered_rbf_nodes`](rbf_tapered_nodes.jl), pure base Julia, no external
-   mesher): brick-offset rows with spacing $h(z) = \lambda(z)/\text{ppw}(z)$,
-   $\lambda(z) = v(z)/f$, so the node spacing follows a points-per-wavelength rule
-   (denser where the wavelength is short), with `ppw` tapering linearly with depth
-   (dense at the water bottom, sparse at depth). A water-bottom-conforming row
-   lands the shallowest nodes on the water bottom.
+   mesher). The rows **conform to** (run parallel to) the water bottom: each row
+   sits at a fixed offset from the per-column WB and the offsets march downward by
+   the local spacing $h(z) = \lambda(z)/\text{ppw}(z)$, $\lambda(z) = v(z)/f$, so
+   the node spacing follows a points-per-wavelength rule (denser where the
+   wavelength is short), with `ppw` tapering linearly with depth (dense at the
+   water bottom, sparse at depth). Making the rows parallel to the WB avoids
+   horizontal rows cross-cutting a dipping boundary. One capped "ghost" row sits
+   just **above** the water bottom (masked out of the model, but its support
+   reaches below) so the near-WB fit has two-sided support and does not overshoot
+   at the boundary.
 3. Build the reduced parameterization operator as a composition:
 
    ```julia
@@ -105,8 +110,8 @@ frequency $\Rightarrow$ longer wavelength $\Rightarrow$ coarser node cloud). Row
 the true model, and the partition-of-unity coverage below the water bottom (water
 shown white). Rows 2-4: the frozen-water + RBF parameterization at 6, 3 and 1.5 Hz
 (nodes overlaid) next to the signed relative error $\Delta v/v$ (red/blue, shared
-color scale). Node counts follow the points-per-wavelength taper: 6 Hz ≈ 474 nodes
-(33× reduction, 0.006 RMS), 3 Hz ≈ 128 (121×, 0.010), 1.5 Hz ≈ 43 (360×, 0.010)
+color scale). Node counts follow the points-per-wavelength taper: 6 Hz ≈ 608 nodes
+(25× reduction, 0.0008 RMS), 3 Hz ≈ 186 (83×, 0.0013), 1.5 Hz ≈ 65 (238×, 0.0032)
 below-WB relative error. Lower frequency = fewer nodes = a smoother, coarser
 representation.
 

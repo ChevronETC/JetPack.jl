@@ -44,8 +44,8 @@ wbdepth(ix) = 12.0 + (38.0 - 12.0) * (ix - 1) / (nx - 1)
 function true_model()
     v = fill(vwater, nz, nx)
     for ix = 1:nx, iz = 1:nz
-        wb = wbdepth(ix)
-        if iz > wb
+        wb = wbcol[ix]          # integer WB, CONSISTENT with the below-WB mask (no water leaking into sediment)
+        if iz >= wb
             s = 1650 + 3.2 * (iz - wb)
             s += 180 * exp(-(((iz - 55) / 16)^2 + ((ix - 70) / 28)^2))
             s -= 140 * exp(-(((iz - 82) / 18)^2 + ((ix - 150) / 34)^2))
@@ -55,10 +55,9 @@ function true_model()
     v
 end
 
-vtrue = true_model()
-
 # per-column water bottom (fine-grid index), below-WB mask, frozen water field, and a linear v(z) trend
 wbcol = [clamp(round(Int, wbdepth(ix)), 1, nz) for ix = 1:nx]
+vtrue = true_model()
 below = [iz >= wbcol[ix] for iz = 1:nz, ix = 1:nx]
 water_field = vwater .* .!below
 a0, b0 = linear_vtrend(vtrue, wbcol)
