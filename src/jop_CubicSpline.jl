@@ -280,7 +280,7 @@ function _build_cubic_spline_kernel(T, n::Int, nc::Int, x::Union{Nothing, Abstra
 
     @inbounds for ic = 1:nc
         imin = Int(floor(xmid[ic] - 2 * dx[ic]))
-        imax = Int(floor(xmid[ic] + 2 * dx[ic]))
+        imax = Int(ceil(xmid[ic] + 2 * dx[ic]))
         imin = max(0, imin)
         imax = min(n, imax)
         iminmax[ic,1] = imin + 1
@@ -292,7 +292,7 @@ function _build_cubic_spline_kernel(T, n::Int, nc::Int, x::Union{Nothing, Abstra
 
     # add the missing contributions from out-of-bounds implicit nodes
     mid = - dx[1]
-    imax = Int(floor(mid + 2 * dx[1]))
+    imax = Int(ceil(mid + 2 * dx[1]))
     imax = min(n, imax)
     @inbounds for i = 0:imax-1
         kernel[i+1,1] += _cubic_spline(i, xmid=mid, dx=dx[1])
@@ -303,6 +303,14 @@ function _build_cubic_spline_kernel(T, n::Int, nc::Int, x::Union{Nothing, Abstra
     imin = max(0, imin)
     @inbounds for i = imin:n-1
         kernel[i+1,end] += _cubic_spline(i, xmid=mid, dx=dx[end])
+    end
+
+    # Enforce partition of unity for non-uniform node spacing
+    if x!== nothing && !is_nearly_uniform
+        @inbounds for i = 1:n
+            s = sum(@view(kernel[i, :]))
+            s != 0 && (@views kernel[i, :] ./= s)
+        end
     end
 
     kernel, iminmax

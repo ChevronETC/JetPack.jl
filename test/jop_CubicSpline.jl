@@ -26,6 +26,17 @@ irregular_x1 = collect((LinRange(0f0, 1f0, nc1)) .^ 1.05f0)
 irregular_x2 = collect((LinRange(0f0, 1f0, nc2)) .^ 1.08f0)
 irregular_x3 = collect((LinRange(0f0, 1f0, nc3)) .^ 0.95f0)
 
+rowsums(A) = vec(sum(convert(Matrix, A), dims=2))
+
+@testset "JopCubicSpline, partition of unity - 3D $(name)" for (name, A) in (
+        ("regular dense (nc==n)", JopCubicSpline(JetSpace(Float32, 11, 10, 9), JetSpace(Float32, 11, 10, 9))),
+        ("regular coarse",        JopCubicSpline(JetSpace(Float32, 10, 5, 4), JetSpace(Float32, 11, 10, 9))),
+        ("non-uniform",           JopCubicSpline(JetSpace(Float32, 10, 5, 4), JetSpace(Float32, 11, 10, 9), 3; x1=collect(LinRange(0f0,1f0,10)).^2f0, x2=collect(LinRange(0f0,1f0,5)).^0.5f0, x3=collect(LinRange(0f0,1f0,4)).^1.5f0)))
+    d = A * ones(Float32, size(domain(A))...)
+    @test all(isapprox.(d, 1f0; atol=1f-5))
+    @test minimum(rowsums(A)) > 0.99f0   # no dropped grid point
+end
+
 @testset "JopCubicSpline, dot product test - (N,n_active_dimensions) = ($(N),$(na))" for (N,na) in ((1,1), (5,1), (2,2), (5,2), (3,3), (5,3))
     dom = JetSpace(Float32, get_domain(N, na)...)
     rng = JetSpace(Float32, get_range(N)...)    
