@@ -1,18 +1,12 @@
 using LinearAlgebra, Jets, JetPack, Test
 
 @inline function _clamp_c1_forward_test(x::T, lo::T, hi::T, δ::T) where {T<:AbstractFloat}
-    if x <= lo
-        return lo
-    elseif x < lo + δ
-        s = (x - lo) / δ
-        return lo + δ * (-s*s*s + 2*s*s)
+    if x <= lo + δ
+        return lo + δ * exp((x - lo - δ) / δ)
     elseif x <= hi - δ
         return x
-    elseif x < hi
-        s = (hi - x) / δ
-        return hi - δ * (-s*s*s + 2*s*s)
     else
-        return hi
+        return hi - δ * exp((hi - δ - x) / δ)
     end
 end
 

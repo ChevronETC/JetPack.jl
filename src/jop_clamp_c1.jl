@@ -1,22 +1,32 @@
 """
-    F = JopClampC1(spc(T), lo::T, hi::T; transition=0.05)
+    F = JopClampC1(spc(T), lo::T, hi::T; transition=0.01)
 
 Pointwise C1 clamp operator with domain and range given by `spc::JetSpace`.
-The operator acts like the identity in the interior of `[lo, hi]`, saturates to the
-hard bounds outside that interval, and uses a cubic transition of width
-`δ = transition * (hi - lo)` near each bound to keep the map continuously
-differentiable.
+The operator is the **exact identity on `[lo + δ, hi - δ]`**, where
+`δ = transition * (hi - lo)`, so interior values are never modified. Outside that
+band it bends smoothly toward the bounds using exponential transitions that are
+**convex near `lo`** and **concave near `hi`**, approaching `lo`/`hi` asymptotically.
 
-More precisely, the lower transition on `[lo, lo + δ]` is
+The lower transition on `x <= lo + δ` is
 
-`lo + δ * (-s^3 + 2s^2)`, with `s = (x - lo) / δ`,
+`f(x) = lo + δ * exp((x - lo - δ) / δ)`,
 
-and the upper transition on `[hi - δ, hi]` is defined symmetrically.
+and the upper transition on `x >= hi - δ` is
+
+`f(x) = hi - δ * exp((hi - δ - x) / δ)`.
+
+Each transition is tangent to the identity at the band edge, so `f(x) >= x` just
+below `lo + δ` and `f(x) <= x` just above `hi - δ`: values are nudged *up* toward the
+lower bound and *down* toward the upper bound, never dragged across the identity. The
+lower piece is convex (`f'' > 0`) and the upper piece concave (`f'' < 0`). The
+derivative is `exp(...)` in the transitions (slope 1 at the band edge, decaying to 0 at
+the asymptote) and `1` in the interior, so the map is C1. The bounds are approached
+asymptotically and never exceeded. Passing `transition = 0` recovers a hard clamp.
 
 This operator is useful when hard clamping would create derivative jumps that make
 linearization tests or gradient-based methods unnecessarily brittle.
 """
-function JopClampC1(spc::JetSpace{T}, lo::Real, hi::Real; transition::Real=0.05) where {T<:AbstractFloat}
+function JopClampC1(spc::JetSpace{T}, lo::Real, hi::Real; transition::Real=0.01) where {T<:AbstractFloat}
     @assert hi > lo "JopClampC1 -- require hi > lo. Got lo=$(lo), hi=$(hi)."
     _transition = T(transition)
     @assert zero(T) <= _transition <= one(T)/2 "JopClampC1 -- require transition in [0, 0.5]. Got transition=$transition."
@@ -25,34 +35,22 @@ end
 export JopClampC1
 
 @inline function _clamp_c1_forward(x::T, lo::T, hi::T, δ::T) where {T<:AbstractFloat}
-    if x <= lo
-        return lo
-    elseif x < lo + δ
-        s = (x - lo) / δ
-        return lo + δ * (-s*s*s + 2*s*s)
+    if x <= lo + δ
+        return lo + δ * exp((x - lo - δ) / δ)
     elseif x <= hi - δ
         return x
-    elseif x < hi
-        s = (hi - x) / δ
-        return hi - δ * (-s*s*s + 2*s*s)
     else
-        return hi
+        return hi - δ * exp((hi - δ - x) / δ)
     end
 end
 
 @inline function _clamp_c1_derivative(x::T, lo::T, hi::T, δ::T) where {T<:AbstractFloat}
-    if x <= lo
-        return zero(T)
-    elseif x < lo + δ
-        s = (x - lo) / δ
-        return -3*s*s + 4*s
+    if x <= lo + δ
+        return exp((x - lo - δ) / δ)
     elseif x <= hi - δ
         return one(T)
-    elseif x < hi
-        s = (hi - x) / δ
-        return -3*s*s + 4*s
     else
-        return zero(T)
+        return exp((hi - δ - x) / δ)
     end
 end
 
