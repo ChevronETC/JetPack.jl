@@ -24,4 +24,9 @@ using JetPack, Jets, Test
     d = rand(range(A))
     lhs, rhs = dot_product_test(A, m, d)
     @test isapprox((lhs-rhs)/(lhs+rhs), 0.0, atol=1e-8)
+
+    A = JopTaper(JetSpace(Float64, 7), (1,), (0.2,), (0.2,))
+    d = A * ones(domain(A))
+    @test all(isfinite, d)
+    @test d[1] == 0 && d[end] == 0
 end

@@ -93,7 +93,7 @@ function buildtaper(dim, prc, mode, n, taper)
 
     for i=1:nlft
         if taper[1] == :cosine
-            x = (i - 1.0) / (nlft - 1.0)
+            x = (nlft > 1 ? (i - 1.0) / (nlft - 1.0) : 0.0)
             tpr[i] = 0.5 * (1.0 + cos(pi * (1.0 + x)))
         else # :heaviside
             tpr[i] = 0.0
@@ -102,7 +102,7 @@ function buildtaper(dim, prc, mode, n, taper)
 
     for i=1:nrht
         if taper[2] == :cosine
-            x = (i - 1.0) / (nrht - 1.0)
+            x = (nrht > 1 ? (i - 1.0) / (nrht - 1.0) : 0.0)
             tpr[n+1-i] = 0.5 * (1.0 + cos(pi * (1.0 + x)))
         else # :heaviside
             tpr[n+1-i] = 0.0
